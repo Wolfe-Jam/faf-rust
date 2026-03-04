@@ -143,6 +143,12 @@ For native AI inference embedding:
 - **Predictable** latency
 - **Easy FFI** to Python/C++
 
+## See Also
+
+- **[mcpaas](https://crates.io/crates/mcpaas)** — Connect to MCPaaS Radio Protocol in Rust. Broadcast context once, every AI receives. faf-rust-sdk reads the format; mcpaas streams it live.
+
+**Do I need both?** Yes. `faf-rust-sdk` parses your .faf project DNA. `mcpaas` streams it live to every AI. One reads, the other delivers.
+
 ## Links
 
 - **Spec:** [github.com/Wolfe-Jam/faf](https://github.com/Wolfe-Jam/faf)
