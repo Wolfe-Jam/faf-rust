@@ -124,6 +124,22 @@ if result.valid {
 | `key_files()` | `&[String]` | Key file paths |
 | `is_high_quality()` | `bool` | Score >= 70% |
 
+## Testing
+
+**82/82 passing** — WJTTC Championship-Grade 3-Tier coverage:
+
+| Tier | Tests | What |
+|------|-------|------|
+| T1 BRAKES | 16 | Security — corruption, validation, type safety |
+| T2 ENGINE | 22 | Core — parsing, scoring, compression, discovery |
+| T3 AERO | 20 | Polish — unicode, large inputs, YAML quirks |
+| Unit | 17 | Inline |
+| Doc | 7 | Doctests |
+
+```bash
+cargo test
+```
+
 ## Performance
 
 Optimized for inference workloads:
