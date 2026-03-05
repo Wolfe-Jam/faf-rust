@@ -40,11 +40,10 @@ impl FafFile {
 
     /// Get AI score as integer (0-100)
     pub fn score(&self) -> Option<u8> {
-        self.data.ai_score.as_ref().and_then(|s| {
-            s.trim_end_matches('%')
-                .parse()
-                .ok()
-        })
+        self.data
+            .ai_score
+            .as_ref()
+            .and_then(|s| s.trim_end_matches('%').parse().ok())
     }
 
     /// Get FAF version

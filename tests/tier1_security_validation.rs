@@ -3,7 +3,7 @@
 //! Corruption detection, type safety, and validation failures.
 //! If brakes fail, everything fails.
 
-use faf_rust_sdk::{parse, validate, find_and_parse};
+use faf_rust_sdk::{find_and_parse, parse, validate};
 use std::fs;
 use tempfile::TempDir;
 
@@ -104,7 +104,8 @@ project:
     fs::write(&faf_path, corrupted).unwrap();
 
     // Step 4: Detect corruption
-    let corrupt_faf = find_and_parse::<std::path::PathBuf>(Some(temp.path().to_path_buf())).unwrap();
+    let corrupt_faf =
+        find_and_parse::<std::path::PathBuf>(Some(temp.path().to_path_buf())).unwrap();
     assert!(corrupt_faf.score().is_none() || validate(&corrupt_faf).warnings.len() > 0);
 
     // Step 5: Self-heal by restoring

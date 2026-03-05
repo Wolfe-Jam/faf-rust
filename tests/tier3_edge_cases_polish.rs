@@ -3,7 +3,7 @@
 //! Unicode, large inputs, YAML quirks, and resilience testing.
 //! The aerodynamic details that separate good from championship.
 
-use faf_rust_sdk::{parse, validate, find_and_parse};
+use faf_rust_sdk::{find_and_parse, parse, validate};
 use std::fs;
 use tempfile::TempDir;
 
@@ -202,14 +202,17 @@ fn test_1000_key_files() {
     }
     let files_yaml = files.join("\n");
 
-    let content = format!(r#"
+    let content = format!(
+        r#"
 faf_version: 2.5.0
 project:
   name: test
 instant_context:
   key_files:
 {}
-"#, files_yaml);
+"#,
+        files_yaml
+    );
 
     let faf = parse(&content).unwrap();
     assert_eq!(faf.key_files().len(), 1000);
@@ -223,13 +226,16 @@ fn test_500_tags() {
     }
     let tags_yaml = tags.join("\n");
 
-    let content = format!(r#"
+    let content = format!(
+        r#"
 faf_version: 2.5.0
 project:
   name: test
 tags:
 {}
-"#, tags_yaml);
+"#,
+        tags_yaml
+    );
 
     let faf = parse(&content).unwrap();
     assert_eq!(faf.data.tags.len(), 500);
@@ -238,11 +244,14 @@ tags:
 #[test]
 fn test_10k_strings() {
     let long_name = "x".repeat(10000);
-    let content = format!(r#"
+    let content = format!(
+        r#"
 faf_version: 2.5.0
 project:
   name: "{}"
-"#, long_name);
+"#,
+        long_name
+    );
 
     let faf = parse(&content).unwrap();
     assert_eq!(faf.project_name().len(), 10000);
@@ -340,14 +349,18 @@ fn test_rapid_modification() {
     let mut success_count = 0;
 
     for i in 0..100 {
-        let content = format!(r#"
+        let content = format!(
+            r#"
 faf_version: 2.5.0
 ai_score: {}%
 
 project:
   name: rapid-test
   goal: Iteration {}
-"#, 50 + (i % 50), i);
+"#,
+            50 + (i % 50),
+            i
+        );
 
         fs::write(&faf_path, &content).unwrap();
 
@@ -358,5 +371,8 @@ project:
         }
     }
 
-    assert!(success_count >= 95, "Should handle rapid modifications reliably");
+    assert!(
+        success_count >= 95,
+        "Should handle rapid modifications reliably"
+    );
 }

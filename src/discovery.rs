@@ -172,7 +172,11 @@ mod tests {
     fn test_find_and_parse() {
         let dir = TempDir::new().unwrap();
         let faf_path = dir.path().join("project.faf");
-        fs::write(&faf_path, "faf_version: 2.5.0\nproject:\n  name: parsed-test").unwrap();
+        fs::write(
+            &faf_path,
+            "faf_version: 2.5.0\nproject:\n  name: parsed-test",
+        )
+        .unwrap();
 
         let result = find_and_parse(Some(dir.path()));
         assert!(result.is_ok());

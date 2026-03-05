@@ -4,8 +4,7 @@
 //! The engine that drives everything.
 
 use faf_rust_sdk::{
-    parse, stringify, validate, compress, estimate_tokens,
-    find_faf_file, find_and_parse,
+    compress, estimate_tokens, find_and_parse, find_faf_file, parse, stringify, validate,
     CompressionLevel,
 };
 use std::fs;
@@ -200,7 +199,12 @@ human_context:
     let compressed = compress(&faf, CompressionLevel::Minimal);
 
     assert_eq!(compressed.project.name, "test");
-    assert!(compressed.instant_context.as_ref().unwrap().tech_stack.is_some());
+    assert!(compressed
+        .instant_context
+        .as_ref()
+        .unwrap()
+        .tech_stack
+        .is_some());
     assert!(compressed.stack.is_none());
     assert!(compressed.human_context.is_none());
 }
@@ -233,7 +237,10 @@ human_context:
 
     assert!(compressed.stack.is_some());
     // Key files limited to 5
-    assert_eq!(compressed.instant_context.as_ref().unwrap().key_files.len(), 5);
+    assert_eq!(
+        compressed.instant_context.as_ref().unwrap().key_files.len(),
+        5
+    );
     assert!(compressed.human_context.is_none());
 }
 
@@ -288,7 +295,11 @@ fn test_discovery_parent() {
 fn test_discovery_roundtrip() {
     let dir = TempDir::new().unwrap();
     let faf_path = dir.path().join("project.faf");
-    fs::write(&faf_path, "faf_version: 2.5.0\nproject:\n  name: parsed-test").unwrap();
+    fs::write(
+        &faf_path,
+        "faf_version: 2.5.0\nproject:\n  name: parsed-test",
+    )
+    .unwrap();
 
     let result = find_and_parse(Some(dir.path()));
     assert!(result.is_ok());

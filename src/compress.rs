@@ -1,7 +1,7 @@
 //! FAF compression for token optimization
 
-use crate::types::*;
 use crate::parser::FafFile;
+use crate::types::*;
 
 /// Compression levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -138,7 +138,12 @@ human_context:
         let compressed = compress(&faf, CompressionLevel::Minimal);
 
         assert_eq!(compressed.project.name, "test");
-        assert!(compressed.instant_context.as_ref().unwrap().tech_stack.is_some());
+        assert!(compressed
+            .instant_context
+            .as_ref()
+            .unwrap()
+            .tech_stack
+            .is_some());
         assert!(compressed.stack.is_none());
         assert!(compressed.human_context.is_none());
     }
@@ -171,7 +176,10 @@ human_context:
 
         assert!(compressed.stack.is_some());
         // Key files limited to 5
-        assert_eq!(compressed.instant_context.as_ref().unwrap().key_files.len(), 5);
+        assert_eq!(
+            compressed.instant_context.as_ref().unwrap().key_files.len(),
+            5
+        );
         // Human context still excluded
         assert!(compressed.human_context.is_none());
     }
