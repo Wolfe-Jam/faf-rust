@@ -15,7 +15,7 @@ exclude = ["target/", ".git/", "*.lock"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-serde_yaml = "0.9"
+serde_yaml_ng = "0.10"
 thiserror = "1.0"
 
 [dev-dependencies]

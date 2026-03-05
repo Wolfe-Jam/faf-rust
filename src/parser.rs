@@ -13,7 +13,7 @@ pub enum FafError {
     EmptyContent,
 
     #[error("Invalid YAML: {0}")]
-    YamlError(#[from] serde_yaml::Error),
+    YamlError(#[from] serde_yaml_ng::Error),
 
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
@@ -110,7 +110,7 @@ pub fn parse(content: &str) -> Result<FafFile, FafError> {
         return Err(FafError::EmptyContent);
     }
 
-    let data: FafData = serde_yaml::from_str(content)?;
+    let data: FafData = serde_yaml_ng::from_str(content)?;
 
     Ok(FafFile { data, path: None })
 }
@@ -137,7 +137,7 @@ pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<FafFile, FafError> {
 
 /// Serialize FAF back to YAML string
 pub fn stringify(faf: &FafFile) -> Result<String, FafError> {
-    Ok(serde_yaml::to_string(&faf.data)?)
+    Ok(serde_yaml_ng::to_string(&faf.data)?)
 }
 
 #[cfg(test)]
