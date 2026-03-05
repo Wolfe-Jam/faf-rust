@@ -46,16 +46,15 @@ pub fn validate(faf: &FafFile) -> ValidationResult {
     }
 
     // Recommended sections
-    if faf.data.instant_context.is_none() {
-        warnings.push("Missing instant_context section".to_string());
-    } else {
-        let ic = faf.data.instant_context.as_ref().unwrap();
+    if let Some(ic) = &faf.data.instant_context {
         if ic.what_building.is_none() {
             warnings.push("Missing instant_context.what_building".to_string());
         }
         if ic.tech_stack.is_none() {
             warnings.push("Missing instant_context.tech_stack".to_string());
         }
+    } else {
+        warnings.push("Missing instant_context section".to_string());
     }
 
     if faf.data.stack.is_none() {
