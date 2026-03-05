@@ -18,12 +18,14 @@
 //! println!("Project: {}", faf.project_name());
 //! ```
 
+pub mod binary;
 mod compress;
 mod discovery;
 mod parser;
 mod types;
 mod validator;
 
+pub use binary::{FafbError, FafbHeader, Flags, Priority, SectionEntry, SectionTable, SectionType};
 pub use compress::{compress, estimate_tokens, CompressionLevel};
 pub use discovery::{find_and_parse, find_faf_file, FindError};
 pub use parser::{parse, parse_file, stringify, FafError, FafFile};

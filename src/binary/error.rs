@@ -1,0 +1,47 @@
+//! FAFB Error Types
+//!
+//! Error handling for binary format operations.
+
+use thiserror::Error;
+
+/// Errors that can occur when working with .fafb files
+#[derive(Error, Debug)]
+pub enum FafbError {
+    /// Invalid magic number - not a FAFB file
+    #[error("Invalid magic number: expected FAFB (0x46414642), got {0:#010x}")]
+    InvalidMagic(u32),
+
+    /// Incompatible major version
+    #[error("Incompatible version: expected major version {expected}, got {actual}")]
+    IncompatibleVersion { expected: u8, actual: u8 },
+
+    /// Checksum mismatch - file may be corrupted
+    #[error("Checksum mismatch: expected {expected:#010x}, got {actual:#010x}")]
+    ChecksumMismatch { expected: u32, actual: u32 },
+
+    /// File too small to contain valid header
+    #[error("File too small: expected at least {expected} bytes, got {actual}")]
+    FileTooSmall { expected: usize, actual: usize },
+
+    /// Section table offset points outside file bounds
+    #[error("Invalid section table offset: {offset} exceeds file size {file_size}")]
+    InvalidSectionTableOffset { offset: u32, file_size: u32 },
+
+    /// Section count exceeds maximum allowed
+    #[error("Section count {count} exceeds maximum {max}")]
+    TooManySections { count: u16, max: u16 },
+
+    /// IO error during read/write
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+
+    /// Total size in header doesn't match actual data
+    #[error("Size mismatch: header says {header_size} bytes, actual {actual_size}")]
+    SizeMismatch {
+        header_size: u32,
+        actual_size: usize,
+    },
+}
+
+/// Result type for FAFB operations
+pub type FafbResult<T> = Result<T, FafbError>;
