@@ -8,7 +8,7 @@ High-performance Rust SDK for **FAF (Foundational AI-context Format)** - optimiz
 
 ```toml
 [dependencies]
-faf-sdk = "1.0"
+faf-rust-sdk = "1.0"
 ```
 
 ## Quick Start
