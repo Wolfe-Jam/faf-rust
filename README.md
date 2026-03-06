@@ -8,13 +8,13 @@ High-performance Rust SDK for **FAF (Foundational AI-context Format)** - optimiz
 
 ```toml
 [dependencies]
-faf-rust-sdk = "1.0"
+faf-rust-sdk = "1.2"
 ```
 
 ## Quick Start
 
 ```rust
-use faf_sdk::{parse, validate, compress, CompressionLevel};
+use faf_rust_sdk::{parse, validate, compress, CompressionLevel};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let content = r#"
@@ -58,7 +58,7 @@ stack:
 Designed for high-throughput inference:
 
 ```rust
-use faf_sdk::parse;
+use faf_rust_sdk::parse;
 
 // Parse in ~1ms
 let faf = parse(content)?;
@@ -73,7 +73,7 @@ let stack = faf.tech_stack();
 Optimize for context window constraints:
 
 ```rust
-use faf_sdk::{compress, CompressionLevel};
+use faf_rust_sdk::{compress, CompressionLevel};
 
 // Level 1: ~150 tokens
 let minimal = compress(&faf, CompressionLevel::Minimal);
@@ -90,7 +90,7 @@ let full = compress(&faf, CompressionLevel::Full);
 Check structure and completeness:
 
 ```rust
-use faf_sdk::validate;
+use faf_rust_sdk::validate;
 
 let result = validate(&faf);
 if result.valid {
@@ -126,7 +126,7 @@ if result.valid {
 
 ## Testing
 
-**82/82 passing** — WJTTC Championship-Grade 3-Tier coverage:
+**137/137 passing** — WJTTC Championship-Grade 3-Tier coverage:
 
 | Tier | Tests | What |
 |------|-------|------|

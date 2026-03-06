@@ -4,12 +4,12 @@ project:
   name: faf-rust-sdk
   goal: High-performance Rust SDK for FAF format parsing and validation
   main_language: Rust
-  version: 1.0.1
+  version: 1.2.0
   license: MIT
 
 instant_context:
   what_building: Rust SDK for FAF (Foundational AI-context Format)
-  tech_stack: Rust 2021, serde, serde_yaml
+  tech_stack: Rust 2021, serde, serde_yaml_ng
   deployment: crates.io
   key_files:
     - src/lib.rs
@@ -18,6 +18,7 @@ instant_context:
     - src/validator.rs
     - src/compress.rs
     - src/discovery.rs
+    - src/binary/
   commands:
     test: cargo test
     build: cargo build --release
@@ -44,7 +45,7 @@ human_context:
 
 state:
   phase: production
-  version: 1.0.1
+  version: 1.2.0
   focus: Binary format spec (.fafb)
 
 tags:
