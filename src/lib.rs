@@ -25,6 +25,9 @@ mod parser;
 mod types;
 mod validator;
 
+#[cfg(feature = "axum")]
+pub mod axum;
+
 pub use binary::{FafbError, FafbHeader, Flags, Priority, SectionEntry, SectionTable, SectionType};
 pub use compress::{compress, estimate_tokens, CompressionLevel};
 pub use discovery::{find_and_parse, find_faf_file, FindError};

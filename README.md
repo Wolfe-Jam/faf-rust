@@ -8,7 +8,7 @@ High-performance Rust SDK for **FAF (Foundational AI-context Format)** - optimiz
 
 ```toml
 [dependencies]
-faf-rust-sdk = "1.2"
+faf-rust-sdk = "1.3"
 ```
 
 ## Quick Start
@@ -126,15 +126,16 @@ if result.valid {
 
 ## Testing
 
-**137/137 passing** — WJTTC Championship-Grade 3-Tier coverage:
+**145/145 passing** — WJTTC Championship-Grade 3-Tier coverage:
 
 | Tier | Tests | What |
 |------|-------|------|
 | T1 BRAKES | 16 | Security — corruption, validation, type safety |
 | T2 ENGINE | 22 | Core — parsing, scoring, compression, discovery |
 | T3 AERO | 20 | Polish — unicode, large inputs, YAML quirks |
+| Axum | 8 | Integration — middleware, extractors, builder |
 | Unit | 17 | Inline |
-| Doc | 7 | Doctests |
+| Doc | 10 | Doctests |
 
 ```bash
 cargo test
@@ -158,6 +159,42 @@ For native AI inference embedding:
 - **No GC** pauses
 - **Predictable** latency
 - **Easy FFI** to Python/C++
+
+## Axum Integration
+
+Add FAF project context to any Axum server with one line:
+
+```toml
+[dependencies]
+faf-rust-sdk = { version = "1.3", features = ["axum"] }
+```
+
+```rust
+use axum::{Router, routing::get};
+use faf_rust_sdk::axum::{FafLayer, FafContext};
+
+let app: Router = Router::new()
+    .route("/", get(handler))
+    .layer(FafLayer::new());
+
+async fn handler(faf: FafContext) -> String {
+    format!("Project: {}", faf.project_name())
+}
+```
+
+The `.faf` file is parsed **once** at startup. Per-request cost is a single `Arc::clone`.
+
+Use the builder for options:
+
+```rust
+use faf_rust_sdk::axum::FafLayer;
+use faf_rust_sdk::CompressionLevel;
+
+let layer = FafLayer::builder()
+    .dir("./my-project")
+    .compression(CompressionLevel::Minimal)
+    .try_build()?;
+```
 
 ## See Also
 
