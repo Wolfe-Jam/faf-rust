@@ -4,7 +4,7 @@ project:
   name: faf-rust-sdk
   goal: High-performance Rust SDK for FAF format parsing and validation
   main_language: Rust
-  version: 1.2.0
+  version: 1.3.0
   license: MIT
 instant_context:
   what_building: Rust SDK for FAF (Foundational AI-context Format)
@@ -40,8 +40,8 @@ human_context:
   when: November 2025
 state:
   phase: production
-  version: 1.2.0
-  focus: Binary format spec (.fafb)
+  version: 1.3.0
+  focus: "Axum integration + binary format spec (.fafb)"
 tags:
   - rust
   - sdk
