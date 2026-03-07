@@ -46,7 +46,10 @@ async fn layer_injects_context() {
     let layer = FafLayer::builder().dir(dir.path()).build();
 
     let app = Router::new()
-        .route("/", get(|faf: FafContext| async move { faf.project_name().to_string() }))
+        .route(
+            "/",
+            get(|faf: FafContext| async move { faf.project_name().to_string() }),
+        )
         .layer(layer);
 
     let resp = app
@@ -54,7 +57,9 @@ async fn layer_injects_context() {
         .await
         .unwrap();
 
-    let body = axum::body::to_bytes(resp.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
+        .await
+        .unwrap();
     assert_eq!(&body[..], b"axum-test-app");
 }
 
@@ -157,7 +162,10 @@ async fn from_file_works() {
     let layer = FafLayer::from_file(faf);
 
     let app = Router::new()
-        .route("/", get(|faf: FafContext| async move { faf.project_name().to_string() }))
+        .route(
+            "/",
+            get(|faf: FafContext| async move { faf.project_name().to_string() }),
+        )
         .layer(layer);
 
     let resp = app
@@ -165,6 +173,8 @@ async fn from_file_works() {
         .await
         .unwrap();
 
-    let body = axum::body::to_bytes(resp.into_body(), usize::MAX).await.unwrap();
+    let body = axum::body::to_bytes(resp.into_body(), usize::MAX)
+        .await
+        .unwrap();
     assert_eq!(&body[..], b"axum-test-app");
 }
