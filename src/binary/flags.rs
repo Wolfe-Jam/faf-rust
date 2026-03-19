@@ -21,7 +21,13 @@ pub const FLAG_MODEL_HINTS: u16 = 0b0000_0000_0001_0000;
 /// Contains cryptographic signature
 pub const FLAG_SIGNED: u16 = 0b0000_0000_0010_0000;
 
-// Reserved: bits 6-15 for future use
+/// Contains a string table (always set in unified format)
+pub const FLAG_STRING_TABLE: u16 = 0b0000_0000_0100_0000;
+
+/// File is output of chain resolution (enterprise)
+pub const FLAG_RESOLVED: u16 = 0b0000_0000_1000_0000;
+
+// Reserved: bits 8-15 for future use
 
 /// Helper struct for working with flags
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -126,6 +132,34 @@ impl Flags {
             self.0 &= !FLAG_SIGNED;
         }
     }
+
+    /// Check if string table flag is set
+    pub const fn has_string_table(&self) -> bool {
+        self.0 & FLAG_STRING_TABLE != 0
+    }
+
+    /// Set string table flag
+    pub fn set_string_table(&mut self, value: bool) {
+        if value {
+            self.0 |= FLAG_STRING_TABLE;
+        } else {
+            self.0 &= !FLAG_STRING_TABLE;
+        }
+    }
+
+    /// Check if resolved flag is set (enterprise chain resolution)
+    pub const fn is_resolved(&self) -> bool {
+        self.0 & FLAG_RESOLVED != 0
+    }
+
+    /// Set resolved flag (enterprise chain resolution)
+    pub fn set_resolved(&mut self, value: bool) {
+        if value {
+            self.0 |= FLAG_RESOLVED;
+        } else {
+            self.0 &= !FLAG_RESOLVED;
+        }
+    }
 }
 
 impl From<u16> for Flags {
@@ -152,6 +186,8 @@ mod tests {
         assert_eq!(FLAG_WEIGHTED, 8);
         assert_eq!(FLAG_MODEL_HINTS, 16);
         assert_eq!(FLAG_SIGNED, 32);
+        assert_eq!(FLAG_STRING_TABLE, 64);
+        assert_eq!(FLAG_RESOLVED, 128);
     }
 
     #[test]
@@ -182,5 +218,14 @@ mod tests {
 
         assert!(!flags.is_compressed());
         assert!(flags.has_embeddings());
+    }
+
+    #[test]
+    fn test_resolved_flag() {
+        let mut flags = Flags::new();
+        assert!(!flags.is_resolved());
+        flags.set_resolved(true);
+        assert!(flags.is_resolved());
+        assert_eq!(flags.raw() & FLAG_RESOLVED, FLAG_RESOLVED);
     }
 }

@@ -1,41 +1,31 @@
-//! FAFB Binary Format
+//! FAFB Binary Format — Unified Specification
 //!
-//! Implementation of the .fafb binary format specification.
 //! Compiles human-readable .faf (YAML) to AI-optimized binary.
+//! String table for unlimited section names, classification bits for DNA/Context/Pointer.
 //!
 //! ## Features
 //!
 //! - **O(1) section lookup** - Section table at end for instant access
 //! - **Priority truncation** - Smart context window management
 //! - **Pre-computed tokens** - No runtime estimation
-//! - **Memory mapping ready** - Zero-copy loading design
+//! - **String table** - Unlimited section names (up to 256)
+//! - **Classification** - DNA / Context / Pointer chunk types
 //!
 //! ## Usage
 //!
 //! ```ignore
-//! use faf_rust_sdk::binary::{FafbHeader, Flags, SectionEntry, SectionTable, SectionType, Priority};
+//! use faf_rust_sdk::binary::{compile, decompile, CompileOptions};
 //!
-//! // Create a new header
-//! let mut header = FafbHeader::with_timestamp();
-//! header.set_source_checksum(yaml_content.as_bytes());
-//! header.section_count = 3;
-//!
-//! // Create section table
-//! let mut table = SectionTable::new();
-//! table.push(SectionEntry::new(SectionType::Meta, 32, 100));
-//! table.push(SectionEntry::new(SectionType::TechStack, 132, 200)
-//!     .with_priority(Priority::high()));
-//!
-//! // Budget-aware loading
-//! let sections = table.entries_within_budget(1000);
+//! let yaml = "faf_version: 2.5.0\nproject:\n  name: my-project\n";
+//! let opts = CompileOptions { use_timestamp: false };
+//! let bytes = compile(yaml, &opts).unwrap();
+//! let result = decompile(&bytes).unwrap();
+//! let name = result.get_section_string_by_name("project").unwrap();
 //! ```
 //!
-//! ## Format Version
-//!
-//! Current: v1.0
-//!
-//! See FAFB-BINARY-SPEC.md for full specification.
+//! See FAFB-SPEC-UNIFIED.md for full specification.
 
+pub mod chunk_registry;
 pub mod compile;
 pub mod error;
 pub mod flags;
@@ -43,13 +33,17 @@ pub mod header;
 pub mod priority;
 pub mod section;
 pub mod section_type;
+pub mod string_table;
 
 // Re-exports for convenience
-pub use compile::{compile, decompile, DecompiledFafb};
+pub use chunk_registry::{
+    classify_key, ChunkClassification, CLASSIFICATION_MASK, DNA_KEYS, POINTER_KEY,
+};
+pub use compile::{compile, decompile, CompileOptions, DecompiledFafb};
 pub use error::{FafbError, FafbResult};
 pub use flags::{
-    Flags, FLAG_COMPRESSED, FLAG_EMBEDDINGS, FLAG_MODEL_HINTS, FLAG_SIGNED, FLAG_TOKENIZED,
-    FLAG_WEIGHTED,
+    Flags, FLAG_COMPRESSED, FLAG_EMBEDDINGS, FLAG_MODEL_HINTS, FLAG_RESOLVED, FLAG_SIGNED,
+    FLAG_STRING_TABLE, FLAG_TOKENIZED, FLAG_WEIGHTED,
 };
 pub use header::{
     FafbHeader, HEADER_SIZE, MAGIC, MAGIC_U32, MAX_FILE_SIZE, MAX_SECTIONS, VERSION_MAJOR,
@@ -64,3 +58,4 @@ pub use section_type::{
     SECTION_CUSTOM, SECTION_EMBEDDINGS, SECTION_KEY_FILES, SECTION_META, SECTION_MODEL_HINTS,
     SECTION_TECH_STACK, SECTION_TOKEN_MAP,
 };
+pub use string_table::StringTable;

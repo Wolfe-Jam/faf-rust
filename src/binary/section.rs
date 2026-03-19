@@ -21,6 +21,7 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{Read, Write};
 
+use super::chunk_registry::{ChunkClassification, CLASSIFICATION_MASK};
 use super::error::{FafbError, FafbResult};
 use super::priority::Priority;
 use super::section_type::SectionType;
@@ -74,6 +75,23 @@ impl SectionEntry {
     pub fn with_flags(mut self, flags: u32) -> Self {
         self.flags = flags;
         self
+    }
+
+    /// Set classification in the low 2 bits of flags (v2)
+    pub fn with_classification(mut self, classification: ChunkClassification) -> Self {
+        // Clear low 2 bits, then set classification
+        self.flags = (self.flags & !CLASSIFICATION_MASK) | classification.bits();
+        self
+    }
+
+    /// Get the classification from the low 2 bits of flags (v2)
+    pub fn classification(&self) -> ChunkClassification {
+        ChunkClassification::from_bits(self.flags)
+    }
+
+    /// Get section-specific flags (bits 2+, excluding classification)
+    pub fn section_flags(&self) -> u32 {
+        self.flags & !CLASSIFICATION_MASK
     }
 
     /// Write entry to a byte buffer

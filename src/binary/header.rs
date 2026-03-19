@@ -14,7 +14,7 @@
 //! 12      8     created_timestamp (Unix)
 //! 20      2     section_count
 //! 22      4     section_table_offset
-//! 26      2     reserved
+//! 26      2     string_table_index
 //! 28      4     total_size
 //! ------  ----
 //! Total: 32 bytes
@@ -24,7 +24,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{Cursor, Read, Write};
 
 use super::error::{FafbError, FafbResult};
-use super::flags::Flags;
+use super::flags::{Flags, FLAG_STRING_TABLE};
 
 /// Magic number identifying FAFB files: "FAFB" in ASCII
 pub const MAGIC: [u8; 4] = *b"FAFB";
@@ -32,7 +32,7 @@ pub const MAGIC: [u8; 4] = *b"FAFB";
 /// Magic number as u32 (little-endian)
 pub const MAGIC_U32: u32 = 0x4246_4146; // "FAFB" little-endian
 
-/// Current format major version (breaking changes)
+/// Format major version
 pub const VERSION_MAJOR: u8 = 1;
 
 /// Current format minor version (additive changes)
@@ -69,8 +69,8 @@ pub struct FafbHeader {
     pub section_count: u16,
     /// Byte offset to section table (from start of file)
     pub section_table_offset: u32,
-    /// Reserved for future use
-    pub reserved: u16,
+    /// Index of string table entry in section table
+    pub string_table_index: u16,
 
     // Size (4 bytes)
     /// Total file size in bytes
@@ -78,17 +78,17 @@ pub struct FafbHeader {
 }
 
 impl FafbHeader {
-    /// Create a new header with default version and empty flags
+    /// Create a new header with default version and STRING_TABLE flag set
     pub fn new() -> Self {
         Self {
             version_major: VERSION_MAJOR,
             version_minor: VERSION_MINOR,
-            flags: Flags::new(),
+            flags: Flags::from_raw(FLAG_STRING_TABLE),
             source_checksum: 0,
             created_timestamp: 0,
             section_count: 0,
             section_table_offset: HEADER_SIZE as u32,
-            reserved: 0,
+            string_table_index: 0,
             total_size: HEADER_SIZE as u32,
         }
     }
@@ -105,8 +105,6 @@ impl FafbHeader {
 
     /// Compute CRC32 checksum of source YAML
     pub fn compute_checksum(yaml_source: &[u8]) -> u32 {
-        // WHY: CRC32 of source YAML (not binary) - enables integrity verification
-        // that the .fafb was created from a specific .faf source file
         crc32fast::hash(yaml_source)
     }
 
@@ -117,32 +115,16 @@ impl FafbHeader {
 
     /// Write header to a byte buffer
     pub fn write<W: Write>(&self, writer: &mut W) -> FafbResult<()> {
-        // WHY: Field order matches FAFB spec exactly - parsers depend on this layout
-        // WHY: Little-endian used throughout for cross-platform compatibility (x86/ARM native)
-
-        // Magic (4 bytes) - identifies file type before any other parsing
         writer.write_all(&MAGIC)?;
-
-        // Version (2 bytes) - enables format evolution without breaking old readers
         writer.write_u8(self.version_major)?;
         writer.write_u8(self.version_minor)?;
-
-        // Flags (2 bytes) - feature detection without version bump
         writer.write_u16::<LittleEndian>(self.flags.raw())?;
-
-        // Integrity (12 bytes) - checksum enables source→binary verification
         writer.write_u32::<LittleEndian>(self.source_checksum)?;
         writer.write_u64::<LittleEndian>(self.created_timestamp)?;
-
-        // Index (8 bytes) - section table location for random access
         writer.write_u16::<LittleEndian>(self.section_count)?;
         writer.write_u32::<LittleEndian>(self.section_table_offset)?;
-        // WHY: Reserved bytes allow future header extensions without version bump
-        writer.write_u16::<LittleEndian>(self.reserved)?;
-
-        // Size (4 bytes) - enables pre-allocation and bounds validation
+        writer.write_u16::<LittleEndian>(self.string_table_index)?;
         writer.write_u32::<LittleEndian>(self.total_size)?;
-
         Ok(())
     }
 
@@ -155,8 +137,6 @@ impl FafbHeader {
 
     /// Read header from a byte buffer
     pub fn read<R: Read>(reader: &mut R) -> FafbResult<Self> {
-        // WHY: Fail fast on magic check - 4 bytes tells us if this is even FAFB
-        // Checking magic first avoids parsing garbage data as valid fields
         let mut magic = [0u8; 4];
         reader.read_exact(&mut magic)?;
 
@@ -165,8 +145,6 @@ impl FafbHeader {
             return Err(FafbError::InvalidMagic(magic_u32));
         }
 
-        // WHY: Version check before full parse - incompatible versions may have
-        // different field layouts, so we must reject early to avoid misreading
         let version_major = reader.read_u8()?;
         let version_minor = reader.read_u8()?;
 
@@ -177,15 +155,10 @@ impl FafbHeader {
             });
         }
 
-        // WHY: Unknown flags ignored per spec - enables forward compatibility
-        // New readers can parse old files; old readers can parse new files with new flags
         let flags = Flags::from_raw(reader.read_u16::<LittleEndian>()?);
-
-        // Integrity fields - read unconditionally, validate later with source
         let source_checksum = reader.read_u32::<LittleEndian>()?;
         let created_timestamp = reader.read_u64::<LittleEndian>()?;
 
-        // WHY: DoS protection - reject before allocating large section tables
         let section_count = reader.read_u16::<LittleEndian>()?;
         if section_count > MAX_SECTIONS {
             return Err(FafbError::TooManySections {
@@ -195,9 +168,8 @@ impl FafbHeader {
         }
 
         let section_table_offset = reader.read_u32::<LittleEndian>()?;
-        let reserved = reader.read_u16::<LittleEndian>()?;
+        let string_table_index = reader.read_u16::<LittleEndian>()?;
 
-        // WHY: DoS protection - reject unreasonably large files before processing
         let total_size = reader.read_u32::<LittleEndian>()?;
         if total_size > MAX_FILE_SIZE {
             return Err(FafbError::SizeMismatch {
@@ -214,7 +186,7 @@ impl FafbHeader {
             created_timestamp,
             section_count,
             section_table_offset,
-            reserved,
+            string_table_index,
             total_size,
         })
     }
@@ -234,10 +206,6 @@ impl FafbHeader {
 
     /// Validate header against actual file data
     pub fn validate(&self, file_data: &[u8]) -> FafbResult<()> {
-        // WHY: Validation order is cheapest checks first - size comparison is O(1)
-        // and catches truncated files before more expensive parsing
-
-        // Size check detects truncated downloads or corrupted files
         if self.total_size as usize != file_data.len() {
             return Err(FafbError::SizeMismatch {
                 header_size: self.total_size,
@@ -245,7 +213,6 @@ impl FafbHeader {
             });
         }
 
-        // WHY: Offset check prevents out-of-bounds reads when seeking to section table
         if self.section_table_offset > self.total_size {
             return Err(FafbError::InvalidSectionTableOffset {
                 offset: self.section_table_offset,
@@ -299,6 +266,7 @@ mod tests {
         original.section_count = 5;
         original.section_table_offset = 1024;
         original.total_size = 2048;
+        original.string_table_index = 4;
         original.flags.set_compressed(true);
         original.flags.set_embeddings(true);
 
@@ -315,13 +283,14 @@ mod tests {
             original.section_table_offset,
             recovered.section_table_offset
         );
+        assert_eq!(original.string_table_index, recovered.string_table_index);
         assert_eq!(original.total_size, recovered.total_size);
     }
 
     #[test]
     fn test_invalid_magic() {
         let mut bytes = FafbHeader::new().to_bytes().unwrap();
-        bytes[0] = 0x00; // Corrupt magic
+        bytes[0] = 0x00;
 
         let result = FafbHeader::from_bytes(&bytes);
         assert!(matches!(result, Err(FafbError::InvalidMagic(_))));
@@ -330,7 +299,7 @@ mod tests {
     #[test]
     fn test_incompatible_version() {
         let mut bytes = FafbHeader::new().to_bytes().unwrap();
-        bytes[4] = 99; // Set major version to 99
+        bytes[4] = 99;
 
         let result = FafbHeader::from_bytes(&bytes);
         assert!(matches!(
@@ -344,7 +313,7 @@ mod tests {
 
     #[test]
     fn test_file_too_small() {
-        let bytes = vec![0u8; 16]; // Only 16 bytes, need 32
+        let bytes = vec![0u8; 16];
 
         let result = FafbHeader::from_bytes(&bytes);
         assert!(matches!(
@@ -359,7 +328,7 @@ mod tests {
     #[test]
     fn test_too_many_sections() {
         let mut header = FafbHeader::new();
-        header.section_count = 300; // Over MAX_SECTIONS (256)
+        header.section_count = 300;
 
         let bytes = header.to_bytes().unwrap();
         let result = FafbHeader::from_bytes(&bytes);
@@ -377,11 +346,8 @@ mod tests {
     fn test_checksum_computation() {
         let yaml = b"faf_version: 2.5.0\nproject:\n  name: test";
         let checksum = FafbHeader::compute_checksum(yaml);
-
-        // CRC32 is deterministic
         assert_eq!(checksum, FafbHeader::compute_checksum(yaml));
 
-        // Different content = different checksum
         let yaml2 = b"faf_version: 2.5.0\nproject:\n  name: different";
         assert_ne!(checksum, FafbHeader::compute_checksum(yaml2));
     }
@@ -391,7 +357,7 @@ mod tests {
         let mut header = FafbHeader::new();
         header.total_size = 100;
 
-        let data = vec![0u8; 50]; // Actual size doesn't match header
+        let data = vec![0u8; 50];
 
         let result = header.validate(&data);
         assert!(matches!(
@@ -407,7 +373,7 @@ mod tests {
     fn test_validate_invalid_section_offset() {
         let mut header = FafbHeader::new();
         header.total_size = 100;
-        header.section_table_offset = 200; // Beyond file size
+        header.section_table_offset = 200;
 
         let data = vec![0u8; 100];
 
@@ -439,17 +405,34 @@ mod tests {
         assert!(recovered.flags.is_compressed());
         assert!(recovered.flags.is_signed());
         assert!(!recovered.flags.has_embeddings());
+        assert!(recovered.flags.has_string_table());
     }
 
     #[test]
     fn test_unknown_flags_ignored() {
         let mut header = FafbHeader::new();
-        // Set some "future" flags in reserved bits
-        header.flags = Flags::from_raw(0xFF00);
+        header.flags = Flags::from_raw(0xFF00 | FLAG_STRING_TABLE);
 
         let bytes = header.to_bytes().unwrap();
-        // Should read successfully despite unknown flags
         let recovered = FafbHeader::from_bytes(&bytes).unwrap();
-        assert_eq!(recovered.flags.raw(), 0xFF00);
+        assert_eq!(recovered.flags.raw(), 0xFF00 | FLAG_STRING_TABLE);
+    }
+
+    #[test]
+    fn test_string_table_flag_always_set() {
+        let header = FafbHeader::new();
+        assert!(header.flags.has_string_table());
+    }
+
+    #[test]
+    fn test_string_table_index_roundtrip() {
+        let mut header = FafbHeader::new();
+        header.string_table_index = 7;
+        header.total_size = 1000;
+        header.section_count = 8;
+
+        let bytes = header.to_bytes().unwrap();
+        let recovered = FafbHeader::from_bytes(&bytes).unwrap();
+        assert_eq!(recovered.string_table_index, 7);
     }
 }

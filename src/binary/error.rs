@@ -41,6 +41,26 @@ pub enum FafbError {
         header_size: u32,
         actual_size: usize,
     },
+
+    /// String table index out of bounds
+    #[error("String table index {index} out of bounds (table has {count} entries)")]
+    StringTableIndexOutOfBounds { index: u8, count: u16 },
+
+    /// String table entry exceeds maximum length
+    #[error("String table entry too long: {length} bytes exceeds maximum {max}")]
+    StringTableEntryTooLong { length: usize, max: usize },
+
+    /// String table is full (256 entries max)
+    #[error("String table full: maximum {max} entries")]
+    StringTableFull { max: usize },
+
+    /// Missing string table section in v2 file
+    #[error("Missing string table section (required for FAFb v2)")]
+    MissingStringTable,
+
+    /// Invalid UTF-8 in string table
+    #[error("Invalid UTF-8 in string table: {0}")]
+    InvalidUtf8(String),
 }
 
 /// Result type for FAFB operations
