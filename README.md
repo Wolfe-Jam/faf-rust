@@ -159,3 +159,15 @@ cargo test
 ## License
 
 MIT
+
+---
+
+### Get the CLI
+
+> **faf-cli** — The original AI-Context CLI. A must-have for every builder.
+
+```bash
+npx faf-cli auto
+```
+
+**Anthropic MCP [#2759](https://github.com/modelcontextprotocol/servers/pull/2759)** · **IANA Registered:** `application/vnd.faf+yaml` · [faf.one](https://faf.one) · [npm](https://www.npmjs.com/package/faf-cli)
