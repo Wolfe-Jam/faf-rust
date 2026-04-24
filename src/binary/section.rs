@@ -222,7 +222,7 @@ impl SectionTable {
     /// Get entries sorted by priority (highest first)
     pub fn entries_by_priority(&self) -> Vec<&SectionEntry> {
         let mut sorted: Vec<_> = self.entries.iter().collect();
-        sorted.sort_by(|a, b| b.priority.cmp(&a.priority));
+        sorted.sort_by_key(|e| std::cmp::Reverse(e.priority));
         sorted
     }
 

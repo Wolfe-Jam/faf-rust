@@ -106,7 +106,7 @@ project:
     // Step 4: Detect corruption
     let corrupt_faf =
         find_and_parse::<std::path::PathBuf>(Some(temp.path().to_path_buf())).unwrap();
-    assert!(corrupt_faf.score().is_none() || validate(&corrupt_faf).warnings.len() > 0);
+    assert!(corrupt_faf.score().is_none() || !validate(&corrupt_faf).warnings.is_empty());
 
     // Step 5: Self-heal by restoring
     fs::write(&faf_path, valid).unwrap();
