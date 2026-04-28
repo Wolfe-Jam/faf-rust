@@ -1,5 +1,9 @@
 # faf-rust-sdk v2
 
+**Persistent Project Context for Rust. Parse, validate, score, FAFb (binary).**
+
+**FAF defines. MD instructs. AI codes.**
+
 High-performance Rust SDK for **FAF (Foundational AI-context Format)** — parsing, scoring, validation, and the FAFb binary format.
 
 **IANA Media Type:** `application/vnd.faf+yaml`
