@@ -1,55 +1,40 @@
-faf_version: 2.5.0
-ai_score: 92%
+faf_version: "3.0"
 project:
   name: faf-rust-sdk
-  goal: High-performance Rust SDK for FAF format parsing and validation
+  goal: High-performance Rust SDK for FAF — parse, validate, score, .fafb binary. Zero-copy, inference-optimized. IANA-registered application/vnd.faf+yaml. The public crate xai-faf-rust re-exports.
   main_language: Rust
-  version: 2.0.0
-  license: MIT
-instant_context:
-  what_building: Rust SDK for FAF (Foundational AI-context Format)
-  tech_stack: Rust 2021, serde, serde_yaml_ng
-  deployment: crates.io
-  key_files:
-    - src/lib.rs
-    - src/parser.rs
-    - src/types.rs
-    - src/validator.rs
-    - src/compress.rs
-    - src/discovery.rs
-    - src/binary/
-  commands:
-    test: cargo test
-    build: cargo build --release
-    publish: cargo publish
-    doc: cargo doc --open
+  type: sdk
+  framework: serde + serde_yaml_ng
 stack:
-  backend: Rust 2021 Edition
-  build_tool: Cargo
-  testing: cargo test + criterion benchmarks
-context_quality:
-  slots_filled: 18/24
-  confidence: high
-  handoff_ready: true
+  frontend: slotignored
+  css_framework: slotignored
+  ui_library: slotignored
+  state_management: slotignored
+  backend: slotignored
+  api_type: slotignored
+  runtime: Native (Rust 2021 Edition)
+  database: slotignored
+  connection: slotignored
+  hosting: slotignored
+  build: Cargo (cargo build --release)
+  cicd: GitHub Actions
+  monorepo_tool: slotignored
+  package_manager: Cargo (crates.io)
+  workspaces: slotignored
+  admin: slotignored
+  cache: slotignored
+  search: slotignored
+  storage: slotignored
 human_context:
-  who: wolfejam
-  what: Rust SDK for AI context format
-  why: Zero-copy parsing optimized for inference workloads
-  how: serde YAML parsing with custom validation
-  where: crates.io, GitHub
-  when: November 2025
-state:
-  phase: production
-  version: 2.0.0
-  focus: "Unified FAFb binary format — string table, chunk classification, enterprise scale"
-tags:
-  - rust
-  - sdk
-  - ai-context
-  - yaml
-  - mcp
-  - grok
-  - iana-registered
-metadata:
-  last_claude_sync: 2026-03-06T07:51:37.552Z
-  bi_sync: active
+  who: Rust developers + FAF-family crates (xai-faf-rust, rust-faf-mcp) needing zero-copy .faf parse/validate/score
+  what: Rust SDK for FAF — parser, validator, scorer, .fafb binary (string table, chunk classification, enterprise scale)
+  why: Zero-copy parsing optimized for inference workloads — the Rust-native FAF substrate
+  where: crates.io, GitHub (Wolfe-Jam/faf-rust-sdk)
+  when: Production since November 2025 — v2.0.1, IANA-registered (application/vnd.faf+yaml)
+  how: cargo add faf-rust-sdk — parse/validate/score/compile via the crate API
+monorepo:
+  packages_count: slotignored
+  build_orchestrator: slotignored
+  versioning_strategy: slotignored
+  shared_configs: slotignored
+  remote_cache: slotignored
