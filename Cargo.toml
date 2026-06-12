@@ -1,0 +1,16 @@
+[workspace]
+resolver = "3"
+members = ["crates/faf-rust-sdk"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+authors = ["wolfejam <wolfejam@faf.one>"]
+repository = "https://github.com/Wolfe-Jam/faf-rust"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
