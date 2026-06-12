@@ -153,6 +153,8 @@ cargo test
 - **[faf-wasm-sdk](https://github.com/faf-foundation/faf-wasm-sdk)** — Same FAFb format compiled to WASM for browsers and edge compute
 - **[mcpaas](https://crates.io/crates/mcpaas)** — Stream FAF context live via Radio Protocol
 
+If `faf-rust-sdk` has been useful, consider starring the repo — it helps others find it.
+
 ## Links
 
 - [faf.one](https://faf.one) — project home
