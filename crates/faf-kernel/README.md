@@ -18,8 +18,12 @@ let result = score("project:\n  name: x\n").unwrap();
 assert!(result.score <= 100); // Mk4 33-slot scoring, 0–100
 ```
 
-- **Scoring:** Mk4 engine. The slot universe (21 vs 33) is derived from the
-  document's `app_type` — no license logic in the kernel.
+- **Scoring:** Mk4 engine, always against the 33-slot model. Each slot is
+  populated, empty, or `slotignored`; score = populated ÷ active (33 −
+  slotignored). The kernel knows nothing about `app_type`, owner, or intent —
+  a complex repo and a minimal profile are the same object: a fill pattern over
+  33 slots. `app_type` decides which slots are written `slotignored` at
+  generation time; the kernel only reads the markers.
 - **Tiers:** Trophy 🏆 is the only emoji; sub-Trophy tiers are clean Unicode
   (★ ◆ ◇ ● ○ ♡).
 

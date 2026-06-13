@@ -33,7 +33,7 @@ mod validator;
 pub use compress::{CompressionLevel, compress, estimate_tokens};
 pub use discovery::{FindError, find_and_parse, find_faf_file};
 pub use parser::{FafError, FafFile, parse, parse_file, stringify};
-pub use score::{Mk4Result, Mk4Scorer, SlotState, Universe, score, tier_name, tier_symbol};
+pub use score::{Mk4Result, Mk4Scorer, SlotState, TOTAL_SLOTS, score, tier_name, tier_symbol};
 pub use types::*;
 pub use validator::{ValidationResult, validate};
 
