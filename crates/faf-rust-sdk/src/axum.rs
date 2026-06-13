@@ -25,11 +25,11 @@ use ::http::StatusCode;
 use ::http::request::Parts;
 use ::tower::{Layer, Service};
 
-use faf_core::FafData;
-use faf_core::FafFile;
-use faf_core::{CompressionLevel, compress};
-use faf_core::{FindError, find_and_parse};
-use faf_core::{ValidationResult, validate};
+use faf_kernel::FafData;
+use faf_kernel::FafFile;
+use faf_kernel::{CompressionLevel, compress};
+use faf_kernel::{FindError, find_and_parse};
+use faf_kernel::{ValidationResult, validate};
 
 // ---------------------------------------------------------------------------
 // FafContext — the extractor

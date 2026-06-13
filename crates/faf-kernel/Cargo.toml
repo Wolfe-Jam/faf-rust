@@ -1,5 +1,5 @@
 [package]
-name = "faf-core"
+name = "faf-kernel"
 version = "1.0.0"
 description = "The FAF kernel — parse, validate, and score .faf files (IANA application/vnd.faf+yaml). One kernel, many shells."
 edition.workspace = true

@@ -1,4 +1,4 @@
-# faf-core
+# faf-kernel
 
 The FAF kernel — parse, validate, and score `.faf` files.
 
@@ -9,7 +9,7 @@ CLI, the browser, and the edge all agree by construction — parity is a propert
 of the build, not a test.
 
 ```rust
-use faf_core::{parse, score};
+use faf_kernel::{parse, score};
 
 let faf = parse("faf_version: 2.5.0\nproject:\n  name: my-project\n").unwrap();
 assert_eq!(faf.project_name(), "my-project");

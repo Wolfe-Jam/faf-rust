@@ -116,16 +116,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "faf-core"
-version = "1.0.0"
-dependencies = [
- "serde",
- "serde_yaml_ng",
- "tempfile",
- "thiserror",
-]
-
-[[package]]
 name = "faf-fafb"
 version = "1.0.0"
 dependencies = [
@@ -136,12 +126,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "faf-kernel"
+version = "1.0.0"
+dependencies = [
+ "serde",
+ "serde_yaml_ng",
+ "tempfile",
+ "thiserror",
+]
+
+[[package]]
 name = "faf-rust-sdk"
 version = "3.0.0"
 dependencies = [
  "axum",
- "faf-core",
  "faf-fafb",
+ "faf-kernel",
  "http",
  "tempfile",
  "tokio",

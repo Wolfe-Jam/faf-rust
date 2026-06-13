@@ -1,4 +1,4 @@
-//! faf-core — the FAF kernel.
+//! faf-kernel — the FAF kernel.
 //!
 //! Parse, validate, and score `.faf` files (IANA-registered
 //! `application/vnd.faf+yaml`). This crate is the single source of truth
@@ -7,7 +7,7 @@
 //! # Example
 //!
 //! ```rust
-//! use faf_core::{parse, score};
+//! use faf_kernel::{parse, score};
 //!
 //! let content = r#"
 //! faf_version: 2.5.0

@@ -19,7 +19,7 @@ pub enum CompressionLevel {
 /// # Example
 ///
 /// ```rust
-/// use faf_core::{parse, compress, CompressionLevel};
+/// use faf_kernel::{parse, compress, CompressionLevel};
 ///
 /// let content = r#"
 /// faf_version: 2.5.0

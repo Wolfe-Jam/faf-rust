@@ -3,13 +3,13 @@
 //! `faf-rust-sdk` re-exports two crates so downstream code has one dependency
 //! for the whole Rust FAF surface:
 //!
-//! - [`faf-core`](https://docs.rs/faf-core) — parse, validate, and score
+//! - [`faf-kernel`](https://docs.rs/faf-kernel) — parse, validate, and score
 //!   `.faf` files (the kernel).
 //! - [`faf-fafb`](https://docs.rs/faf-fafb) — the compiled binary form,
 //!   re-exported here under the [`binary`] module.
 //!
 //! As of 3.0 the SDK contains no logic of its own; it is a stable import
-//! surface. The kernel is the single source of truth — the same `faf-core`
+//! surface. The kernel is the single source of truth — the same `faf-kernel`
 //! object scores in the CLI, the MCP server, WASM, and the edge worker, so
 //! parity is a property of the build, not a test that has to be re-run.
 //!
@@ -42,7 +42,7 @@ pub mod binary {
 
 // Kernel re-exports — parse, validate, score, compress, discover, plus all
 // FAF data types.
-pub use faf_core::*;
+pub use faf_kernel::*;
 
 // Binary-format types at the crate root (back-compat with pre-3.0 paths).
 pub use faf_fafb::{FafbError, FafbHeader, Flags, Priority, SectionEntry, SectionTable};
