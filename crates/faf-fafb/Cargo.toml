@@ -1,0 +1,19 @@
+[package]
+name = "faf-fafb"
+version = "1.0.0"
+description = "FAFb v2 — the compiled binary form of .faf. Closed-canonical IFF-style chunks: 33 slots, fixed chunk set, byte-identical output. The brick."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage = "https://faf.one"
+keywords = ["faf", "fafb", "binary", "ai-context", "iff"]
+categories = ["encoding", "development-tools"]
+readme = "README.md"
+
+[dependencies]
+serde_yaml_ng = "0.10"
+thiserror = "1.0"
+byteorder = "1.5"
+crc32fast = "1.3"

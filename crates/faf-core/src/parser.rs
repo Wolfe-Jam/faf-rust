@@ -93,7 +93,7 @@ impl FafFile {
 /// # Example
 ///
 /// ```rust
-/// use faf_rust_sdk::parse;
+/// use faf_core::parse;
 ///
 /// let content = r#"
 /// faf_version: 2.5.0
@@ -120,7 +120,7 @@ pub fn parse(content: &str) -> Result<FafFile, FafError> {
 /// # Example
 ///
 /// ```rust,no_run
-/// use faf_rust_sdk::parse_file;
+/// use faf_core::parse_file;
 ///
 /// let faf = parse_file("project.faf").unwrap();
 /// println!("Project: {}", faf.project_name());

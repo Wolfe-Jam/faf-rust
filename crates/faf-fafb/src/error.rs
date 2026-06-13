@@ -12,7 +12,9 @@ pub enum FafbError {
     InvalidMagic(u32),
 
     /// Incompatible major version
-    #[error("Incompatible version: expected major version {expected}, got {actual}")]
+    #[error(
+        "Incompatible version: expected major version {expected}, got {actual}. FAFb v1 is pre-release history — re-compile from the .faf source"
+    )]
     IncompatibleVersion { expected: u8, actual: u8 },
 
     /// Checksum mismatch - file may be corrupted

@@ -8,12 +8,12 @@
 //! ```text
 //! Offset  Size  Field
 //! ------  ----  -----
-//! 0       1     section_type
+//! 0       1     section_name_index (string table index)
 //! 1       1     priority
 //! 2       4     offset
 //! 6       4     length
 //! 10      2     token_count
-//! 12      4     flags (section-specific)
+//! 12      4     flags (bits 0-1 = classification, bits 2+ section-specific)
 //! ------  ----
 //! Total: 16 bytes
 //! ```
@@ -21,10 +21,9 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{Read, Write};
 
-use super::chunk_registry::{CLASSIFICATION_MASK, ChunkClassification};
+use super::canon::{CLASSIFICATION_MASK, ChunkClassification};
 use super::error::{FafbError, FafbResult};
 use super::priority::Priority;
-use super::section_type::SectionType;
 
 /// Size of a single section entry in bytes
 pub const SECTION_ENTRY_SIZE: usize = 16;
@@ -32,8 +31,8 @@ pub const SECTION_ENTRY_SIZE: usize = 16;
 /// A single section entry in the section table
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SectionEntry {
-    /// Section type identifier
-    pub section_type: SectionType,
+    /// String-table index of this section's name
+    pub name_index: u8,
     /// Truncation priority (0-255, higher = more important)
     pub priority: Priority,
     /// Byte offset to section data (from start of file)
@@ -42,16 +41,17 @@ pub struct SectionEntry {
     pub length: u32,
     /// Pre-computed token count estimate
     pub token_count: u16,
-    /// Section-specific flags (4 bytes for alignment)
+    /// Section flags: bits 0-1 = classification, bits 2+ section-specific
     pub flags: u32,
 }
 
 impl SectionEntry {
-    /// Create a new section entry with default priority
-    pub fn new(section_type: SectionType, offset: u32, length: u32) -> Self {
+    /// Create a new section entry. Callers normally set the real priority via
+    /// `with_priority` (from the canonical chunk table); the default is medium.
+    pub fn new(name_index: u8, offset: u32, length: u32) -> Self {
         Self {
-            section_type,
-            priority: Priority::new(section_type.default_priority()),
+            name_index,
+            priority: Priority::medium(),
             offset,
             length,
             token_count: estimate_tokens(length),
@@ -77,14 +77,14 @@ impl SectionEntry {
         self
     }
 
-    /// Set classification in the low 2 bits of flags (v2)
+    /// Set classification in the low 2 bits of flags
     pub fn with_classification(mut self, classification: ChunkClassification) -> Self {
         // Clear low 2 bits, then set classification
         self.flags = (self.flags & !CLASSIFICATION_MASK) | classification.bits();
         self
     }
 
-    /// Get the classification from the low 2 bits of flags (v2)
+    /// Get the classification from the low 2 bits of flags
     pub fn classification(&self) -> ChunkClassification {
         ChunkClassification::from_bits(self.flags)
     }
@@ -96,7 +96,7 @@ impl SectionEntry {
 
     /// Write entry to a byte buffer
     pub fn write<W: Write>(&self, writer: &mut W) -> FafbResult<()> {
-        writer.write_u8(self.section_type.id())?;
+        writer.write_u8(self.name_index)?;
         writer.write_u8(self.priority.value())?;
         writer.write_u32::<LittleEndian>(self.offset)?;
         writer.write_u32::<LittleEndian>(self.length)?;
@@ -114,7 +114,7 @@ impl SectionEntry {
 
     /// Read entry from a byte buffer
     pub fn read<R: Read>(reader: &mut R) -> FafbResult<Self> {
-        let section_type = SectionType::from(reader.read_u8()?);
+        let name_index = reader.read_u8()?;
         let priority = Priority::from(reader.read_u8()?);
         let offset = reader.read_u32::<LittleEndian>()?;
         let length = reader.read_u32::<LittleEndian>()?;
@@ -122,7 +122,7 @@ impl SectionEntry {
         let flags = reader.read_u32::<LittleEndian>()?;
 
         Ok(Self {
-            section_type,
+            name_index,
             priority,
             offset,
             length,
@@ -209,9 +209,9 @@ impl SectionTable {
         self.entries.get(index)
     }
 
-    /// Get entry by section type
-    pub fn get_by_type(&self, section_type: SectionType) -> Option<&SectionEntry> {
-        self.entries.iter().find(|e| e.section_type == section_type)
+    /// Get entry by its string-table name index
+    pub fn get_by_name_index(&self, name_index: u8) -> Option<&SectionEntry> {
+        self.entries.iter().find(|e| e.name_index == name_index)
     }
 
     /// Get all entries
@@ -340,7 +340,7 @@ mod tests {
 
     #[test]
     fn test_section_entry_size() {
-        let entry = SectionEntry::new(SectionType::Meta, 32, 100);
+        let entry = SectionEntry::new(0, 32, 100);
         let bytes = entry.to_bytes().unwrap();
         assert_eq!(bytes.len(), SECTION_ENTRY_SIZE);
         assert_eq!(bytes.len(), 16);
@@ -348,7 +348,7 @@ mod tests {
 
     #[test]
     fn test_section_entry_roundtrip() {
-        let original = SectionEntry::new(SectionType::TechStack, 64, 256)
+        let original = SectionEntry::new(5, 64, 256)
             .with_priority(Priority::high())
             .with_token_count(100)
             .with_flags(0xDEADBEEF);
@@ -356,24 +356,12 @@ mod tests {
         let bytes = original.to_bytes().unwrap();
         let recovered = SectionEntry::from_bytes(&bytes).unwrap();
 
-        assert_eq!(original.section_type, recovered.section_type);
+        assert_eq!(original.name_index, recovered.name_index);
         assert_eq!(original.priority, recovered.priority);
         assert_eq!(original.offset, recovered.offset);
         assert_eq!(original.length, recovered.length);
         assert_eq!(original.token_count, recovered.token_count);
         assert_eq!(original.flags, recovered.flags);
-    }
-
-    #[test]
-    fn test_section_entry_default_priority() {
-        let meta = SectionEntry::new(SectionType::Meta, 0, 100);
-        assert_eq!(meta.priority.value(), 255); // Critical
-
-        let tech = SectionEntry::new(SectionType::TechStack, 0, 100);
-        assert_eq!(tech.priority.value(), 200); // High
-
-        let context = SectionEntry::new(SectionType::Context, 0, 100);
-        assert_eq!(context.priority.value(), 64); // Low
     }
 
     #[test]
@@ -402,8 +390,8 @@ mod tests {
     #[test]
     fn test_section_table_push() {
         let mut table = SectionTable::new();
-        table.push(SectionEntry::new(SectionType::Meta, 32, 100));
-        table.push(SectionEntry::new(SectionType::TechStack, 132, 200));
+        table.push(SectionEntry::new(0, 32, 100));
+        table.push(SectionEntry::new(1, 132, 200));
 
         assert_eq!(table.len(), 2);
         assert_eq!(table.table_size(), 32);
@@ -412,9 +400,9 @@ mod tests {
     #[test]
     fn test_section_table_roundtrip() {
         let mut original = SectionTable::new();
-        original.push(SectionEntry::new(SectionType::Meta, 32, 100));
-        original.push(SectionEntry::new(SectionType::TechStack, 132, 200));
-        original.push(SectionEntry::new(SectionType::KeyFiles, 332, 500));
+        original.push(SectionEntry::new(0, 32, 100));
+        original.push(SectionEntry::new(1, 132, 200));
+        original.push(SectionEntry::new(2, 332, 500));
 
         let bytes = original.to_bytes().unwrap();
         assert_eq!(bytes.len(), 48); // 3 × 16 bytes
@@ -423,85 +411,77 @@ mod tests {
         assert_eq!(recovered.len(), 3);
 
         for (orig, recv) in original.entries().iter().zip(recovered.entries().iter()) {
-            assert_eq!(orig.section_type, recv.section_type);
+            assert_eq!(orig.name_index, recv.name_index);
             assert_eq!(orig.offset, recv.offset);
             assert_eq!(orig.length, recv.length);
         }
     }
 
     #[test]
-    fn test_section_table_get_by_type() {
+    fn test_section_table_get_by_name_index() {
         let mut table = SectionTable::new();
-        table.push(SectionEntry::new(SectionType::Meta, 32, 100));
-        table.push(SectionEntry::new(SectionType::TechStack, 132, 200));
+        table.push(SectionEntry::new(0, 32, 100));
+        table.push(SectionEntry::new(1, 132, 200));
 
-        let meta = table.get_by_type(SectionType::Meta);
-        assert!(meta.is_some());
-        assert_eq!(meta.unwrap().offset, 32);
+        let first = table.get_by_name_index(0);
+        assert!(first.is_some());
+        assert_eq!(first.unwrap().offset, 32);
 
-        let missing = table.get_by_type(SectionType::KeyFiles);
-        assert!(missing.is_none());
+        assert!(table.get_by_name_index(9).is_none());
     }
 
     #[test]
     fn test_section_table_priority_sorting() {
         let mut table = SectionTable::new();
-        table.push(SectionEntry::new(SectionType::Context, 0, 100).with_priority(Priority::low()));
-        table
-            .push(SectionEntry::new(SectionType::Meta, 0, 100).with_priority(Priority::critical()));
-        table.push(
-            SectionEntry::new(SectionType::TechStack, 0, 100).with_priority(Priority::high()),
-        );
+        table.push(SectionEntry::new(2, 0, 100).with_priority(Priority::low()));
+        table.push(SectionEntry::new(0, 0, 100).with_priority(Priority::critical()));
+        table.push(SectionEntry::new(1, 0, 100).with_priority(Priority::high()));
 
         let sorted = table.entries_by_priority();
-        assert_eq!(sorted[0].section_type, SectionType::Meta); // Critical first
-        assert_eq!(sorted[1].section_type, SectionType::TechStack); // High second
-        assert_eq!(sorted[2].section_type, SectionType::Context); // Low last
+        assert_eq!(sorted[0].name_index, 0); // Critical first
+        assert_eq!(sorted[1].name_index, 1); // High second
+        assert_eq!(sorted[2].name_index, 2); // Low last
     }
 
     #[test]
     fn test_section_table_budget() {
         let mut table = SectionTable::new();
         table.push(
-            SectionEntry::new(SectionType::Meta, 0, 100)
+            SectionEntry::new(0, 0, 100)
                 .with_priority(Priority::critical())
                 .with_token_count(50),
         );
         table.push(
-            SectionEntry::new(SectionType::TechStack, 0, 200)
+            SectionEntry::new(1, 0, 200)
                 .with_priority(Priority::high())
                 .with_token_count(100),
         );
         table.push(
-            SectionEntry::new(SectionType::Context, 0, 1000)
+            SectionEntry::new(2, 0, 1000)
                 .with_priority(Priority::low())
                 .with_token_count(500),
         );
 
-        // Budget of 200 should include Meta (50) and TechStack (100)
+        // Budget of 200 should include critical (50) and high (100)
         let within_budget = table.entries_within_budget(200);
         assert_eq!(within_budget.len(), 2);
 
-        // Meta should always be included (critical)
-        assert!(
-            within_budget
-                .iter()
-                .any(|e| e.section_type == SectionType::Meta)
-        );
+        // The critical entry must always be included
+        assert!(within_budget.iter().any(|e| e.name_index == 0));
     }
 
     #[test]
     fn test_section_table_total_tokens() {
         let mut table = SectionTable::new();
-        table.push(SectionEntry::new(SectionType::Meta, 0, 100).with_token_count(50));
-        table.push(SectionEntry::new(SectionType::TechStack, 0, 200).with_token_count(100));
+        table.push(SectionEntry::new(0, 0, 100).with_token_count(50));
+        table.push(SectionEntry::new(1, 0, 200).with_token_count(100));
 
         assert_eq!(table.total_tokens(), 150);
     }
 
     #[test]
     fn test_section_entry_validate_bounds() {
-        let entry = SectionEntry::new(SectionType::Meta, 100, 50);
+        let entry = SectionEntry::new(0, 100, 50);
 
         // Valid: offset 100, length 50, file size 200
         assert!(entry.validate_bounds(200).is_ok());
@@ -511,19 +491,15 @@ mod tests {
     }
 
     #[test]
-    fn test_unknown_section_type_preserved() {
-        let entry = SectionEntry {
-            section_type: SectionType::Unknown(0x99),
-            priority: Priority::medium(),
-            offset: 0,
-            length: 100,
-            token_count: 25,
-            flags: 0,
-        };
+    fn test_unknown_name_index_preserved() {
+        // The IFF rule: a reader must carry unknown names through untouched
+        let entry = SectionEntry::new(0x99, 0, 100)
+            .with_priority(Priority::medium())
+            .with_token_count(25);
 
         let bytes = entry.to_bytes().unwrap();
         let recovered = SectionEntry::from_bytes(&bytes).unwrap();
 
-        assert!(matches!(recovered.section_type, SectionType::Unknown(0x99)));
+        assert_eq!(recovered.name_index, 0x99);
     }
 }

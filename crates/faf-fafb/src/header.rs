@@ -33,7 +33,7 @@ pub const MAGIC: [u8; 4] = *b"FAFB";
 pub const MAGIC_U32: u32 = 0x4246_4146; // "FAFB" little-endian
 
 /// Format major version
-pub const VERSION_MAJOR: u8 = 1;
+pub const VERSION_MAJOR: u8 = 2;
 
 /// Current format minor version (additive changes)
 pub const VERSION_MINOR: u8 = 0;
@@ -305,7 +305,7 @@ mod tests {
         assert!(matches!(
             result,
             Err(FafbError::IncompatibleVersion {
-                expected: 1,
+                expected: 2,
                 actual: 99
             })
         ));
@@ -390,7 +390,7 @@ mod tests {
     #[test]
     fn test_version_string() {
         let header = FafbHeader::new();
-        assert_eq!(header.version_string(), "1.0");
+        assert_eq!(header.version_string(), "2.0");
     }
 
     #[test]
