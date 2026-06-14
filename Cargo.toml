@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/faf-rust-sdk"]
+members = ["crates/faf-kernel", "crates/faf-fafb", "crates/faf-rust-sdk"]
 
 [workspace.package]
 edition = "2024"
