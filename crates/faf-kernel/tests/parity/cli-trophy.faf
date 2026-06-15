@@ -1,0 +1,38 @@
+faf_version: 2.5.0
+project:
+  name: my-cli
+  goal: Ship fast
+  main_language: Rust
+human_context:
+  who: Devs
+  what: CLI tool
+  why: Speed
+  where: crates.io
+  when: Now
+  how: Cargo
+stack:
+  frontend: slotignored
+  css_framework: slotignored
+  ui_library: slotignored
+  state_management: slotignored
+  backend: slotignored
+  api_type: slotignored
+  runtime: slotignored
+  database: slotignored
+  connection: slotignored
+  hosting: GitHub
+  build: cargo
+  cicd: GitHub Actions
+  monorepo_tool: slotignored
+  package_manager: slotignored
+  workspaces: slotignored
+  admin: slotignored
+  cache: slotignored
+  search: slotignored
+  storage: slotignored
+monorepo:
+  packages_count: slotignored
+  build_orchestrator: slotignored
+  versioning_strategy: slotignored
+  shared_configs: slotignored
+  remote_cache: slotignored
