@@ -63,8 +63,15 @@ pub struct CanonicalChunk {
 }
 
 /// The canonical chunk table — the complete, closed set of FAFb v2 section
-/// names, in serialization order. This IS the format: there is no chunk 24.
+/// names, in serialization order. **This IS the format: there is no chunk 14.**
+///
+/// The set mirrors `faf-cli`'s `FafData` (the single source of truth for the
+/// `.faf` structure — `src/core/types.ts`): 11 DNA chunks + 2 Context. The
+/// metastamp is NOT a chunk — it's the FAFb header (`created_timestamp`),
+/// which is why `.faf`'s `generated:` key lives there, not here. Non-canonical
+/// top-level keys (anything tools add) fold losslessly into `context`.
 pub const CANONICAL_CHUNKS: &[CanonicalChunk] = &[
+    // ── DNA — core identity (11) ──
     CanonicalChunk {
         name: "faf_version",
         classification: ChunkClassification::Dna,
@@ -76,17 +83,22 @@ pub const CANONICAL_CHUNKS: &[CanonicalChunk] = &[
         priority: 255,
     },
     CanonicalChunk {
-        name: "instant_context",
+        name: "app_type",
+        classification: ChunkClassification::Dna,
+        priority: 200,
+    },
+    CanonicalChunk {
+        name: "about",
+        classification: ChunkClassification::Dna,
+        priority: 150,
+    },
+    CanonicalChunk {
+        name: "stack",
         classification: ChunkClassification::Dna,
         priority: 200,
     },
     CanonicalChunk {
         name: "human_context",
-        classification: ChunkClassification::Dna,
-        priority: 200,
-    },
-    CanonicalChunk {
-        name: "stack",
         classification: ChunkClassification::Dna,
         priority: 200,
     },
@@ -115,70 +127,16 @@ pub const CANONICAL_CHUNKS: &[CanonicalChunk] = &[
         classification: ChunkClassification::Dna,
         priority: 128,
     },
-    CanonicalChunk {
-        name: "context",
-        classification: ChunkClassification::Dna,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "bi_sync",
-        classification: ChunkClassification::Dna,
-        priority: 32,
-    },
-    CanonicalChunk {
-        name: "meta",
-        classification: ChunkClassification::Dna,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "ai_score",
-        classification: ChunkClassification::Context,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "ai_confidence",
-        classification: ChunkClassification::Context,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "ai_tldr",
-        classification: ChunkClassification::Context,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "context_quality",
-        classification: ChunkClassification::Context,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "preferences",
-        classification: ChunkClassification::Context,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "state",
-        classification: ChunkClassification::Context,
-        priority: 64,
-    },
-    CanonicalChunk {
-        name: "tags",
-        classification: ChunkClassification::Context,
-        priority: 64,
-    },
+    // ── Context (2) — derived output + the fold target ──
     CanonicalChunk {
         name: "scores",
         classification: ChunkClassification::Context,
         priority: 64,
     },
     CanonicalChunk {
-        name: "generated",
+        name: "context",
         classification: ChunkClassification::Context,
         priority: 64,
-    },
-    CanonicalChunk {
-        name: "docs",
-        classification: ChunkClassification::Pointer,
-        priority: 128,
     },
 ];
 
@@ -197,8 +155,58 @@ mod tests {
     use super::*;
 
     #[test]
-    fn table_is_closed_at_23() {
-        assert_eq!(CANONICAL_CHUNKS.len(), 23);
+    fn table_is_closed_at_13() {
+        // Mirrors faf-cli FafData: 11 DNA + 2 Context. The one-way door.
+        assert_eq!(CANONICAL_CHUNKS.len(), 13);
+        let dna = CANONICAL_CHUNKS
+            .iter()
+            .filter(|c| c.classification == ChunkClassification::Dna)
+            .count();
+        let ctx = CANONICAL_CHUNKS
+            .iter()
+            .filter(|c| c.classification == ChunkClassification::Context)
+            .count();
+        assert_eq!(dna, 11);
+        assert_eq!(ctx, 2);
+    }
+
+    #[test]
+    fn mirrors_faf_cli_fafdata() {
+        // The canonical set IS faf-cli's FafData top-level keys (the truth).
+        for key in [
+            "faf_version",
+            "project",
+            "app_type",
+            "about",
+            "stack",
+            "human_context",
+            "monorepo",
+            "scores",
+            "tech_stack",
+            "key_files",
+            "commands",
+            "architecture",
+            "context",
+        ] {
+            assert!(is_canonical(key), "FafData key '{}' must be canonical", key);
+        }
+        // Keys that diverged from the old faf-rust-sdk model are NOT canonical.
+        for key in [
+            "instant_context",
+            "ai_score",
+            "ai_confidence",
+            "ai_tldr",
+            "context_quality",
+            "preferences",
+            "state",
+            "tags",
+            "meta",
+            "bi_sync",
+            "docs",
+            "generated",
+        ] {
+            assert!(!is_canonical(key), "'{}' must fold, not be a chunk", key);
+        }
     }
 
     #[test]
@@ -217,10 +225,17 @@ mod tests {
     }
 
     #[test]
-    fn docs_is_the_pointer() {
+    fn context_is_the_fold_target() {
+        // `context` is canonical (Context class) and is where non-canonical
+        // keys fold. No Pointer-class chunk exists in the FafData truth.
         assert_eq!(
-            canonical_chunk("docs").unwrap().classification,
-            ChunkClassification::Pointer
+            canonical_chunk("context").unwrap().classification,
+            ChunkClassification::Context
+        );
+        assert!(
+            !CANONICAL_CHUNKS
+                .iter()
+                .any(|c| c.classification == ChunkClassification::Pointer)
         );
     }
 
