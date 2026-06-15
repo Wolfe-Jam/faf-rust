@@ -1,0 +1,28 @@
+[package]
+name = "faf-wasm-sdk"
+version = "3.0.0"
+description = "FAF WASM SDK — the kernel for the edge. wasm-bindgen shell over faf-kernel (scoring) + faf-fafb (binary v2). Same engine as the CLI, no drift."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage = "https://faf.one"
+keywords = ["faf", "wasm", "ai-context", "scoring", "edge"]
+categories = ["wasm", "development-tools"]
+readme = "README.md"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+faf-kernel = { version = "1.0", path = "../faf-kernel" }
+faf-fafb = { version = "1.0", path = "../faf-fafb" }
+wasm-bindgen = "0.2"
+serde_yaml_ng = "0.10"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['-Oz', '-all']
