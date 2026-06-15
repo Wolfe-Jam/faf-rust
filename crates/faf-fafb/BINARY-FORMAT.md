@@ -143,36 +143,86 @@ of how the format evolves.
 ## Canonical chunk table
 
 The complete, closed set of v2 section names, in serialization order. Folding
-aside, this table **is** the format.
+aside, this table **is** the format — **there is no chunk 14.**
+
+The set mirrors **`faf-cli`'s `FafData`** (`src/core/types.ts`) — the single
+source of truth for the `.faf` structure. **13 chunks: 11 DNA + 2 Context.**
 
 | # | Chunk | Class | Priority |
 |---|-------|-------|----------|
 | 1 | `faf_version` | DNA | 255 (critical) |
 | 2 | `project` | DNA | 255 (critical) |
-| 3 | `instant_context` | DNA | 200 |
-| 4 | `human_context` | DNA | 200 |
+| 3 | `app_type` | DNA | 200 |
+| 4 | `about` | DNA | 150 |
 | 5 | `stack` | DNA | 200 |
-| 6 | `tech_stack` | DNA | 200 |
-| 7 | `key_files` | DNA | 200 |
-| 8 | `commands` | DNA | 180 |
-| 9 | `monorepo` | DNA | 150 |
-| 10 | `architecture` | DNA | 128 |
-| 11 | `context` | DNA | 64 |
-| 12 | `bi_sync` | DNA | 32 |
-| 13 | `meta` | DNA | 64 |
-| 14 | `ai_score` | Context | 64 |
-| 15 | `ai_confidence` | Context | 64 |
-| 16 | `ai_tldr` | Context | 64 |
-| 17 | `context_quality` | Context | 64 |
-| 18 | `preferences` | Context | 64 |
-| 19 | `state` | Context | 64 |
-| 20 | `tags` | Context | 64 |
-| 21 | `scores` | Context | 64 |
-| 22 | `generated` | Context | 64 |
-| 23 | `docs` | Pointer | 128 |
+| 6 | `human_context` | DNA | 200 |
+| 7 | `tech_stack` | DNA | 200 |
+| 8 | `key_files` | DNA | 200 |
+| 9 | `commands` | DNA | 180 |
+| 10 | `monorepo` | DNA | 150 |
+| 11 | `architecture` | DNA | 128 |
+| 12 | `scores` | Context | 64 |
+| 13 | `context` | Context | 64 (fold target) |
 
 `__string_table__` is appended as the final data section; it is structural, not
 a content chunk.
+
+> **The metastamp is the header, not a chunk.** The `.faf` `generated:` key is
+> *not* in this table — it maps to the header's `created_timestamp` field. The
+> header (magic + version + `created_timestamp` + `section_table_offset`) plus
+> the section table at the end *is* the rapid-index metastamp: O(1) lookup with
+> no content parse.
+>
+> **Keys that fold (not chunks):** `instant_context`, the `ai_*` family,
+> `context_quality`, `preferences`, `state`, `tags`, `meta`, `bi_sync`, `docs`,
+> `generated`, and anything tools invent — all land in `context`, losslessly.
+> (Several came from the older `faf-rust-sdk` model that had diverged from
+> faf-cli; the truth is leaner.)
+
+### The brick, visually
+
+```mermaid
+flowchart TB
+    SRC([".faf — YAML source of truth<br/>faf-cli FafData"]):::entry
+    subgraph FAFB[".fafb v2 — closed canonical · 13 chunks"]
+        direction TB
+        HDR["HEADER 32B = the metastamp<br/>FAFB · v2 · created_timestamp · section_table_offset"]:::spine
+        subgraph DNA["DNA — core identity (11)"]
+            direction LR
+            FV[faf_version]:::dna
+            P[project]:::slotb
+            AT[app_type]:::dna
+            AB[about]:::dna
+            ST[stack]:::slotb
+            HC[human_context]:::slotb
+            MR[monorepo]:::dna
+            TS[tech_stack]:::dna
+            KF[key_files]:::dna
+            CM[commands]:::dna
+            AR[architecture]:::dna
+        end
+        subgraph CTXC["Context (2)"]
+            direction LR
+            SC[scores]:::dna
+            CX["context = fold target"]:::fold
+        end
+        STBL["section table (end) — O(1) lookup"]:::spine
+    end
+    SLOTS["the 33 slots live INSIDE<br/>project · human_context · stack<br/>chunks ≠ slots"]:::note
+    DROP["non-canonical keys → fold losslessly<br/>instant_context · ai_* · meta · bi_sync<br/>generated · docs · preferences · state · tags"]:::drop
+    SRC --> HDR
+    P -.holds.-> SLOTS
+    HC -.holds.-> SLOTS
+    ST -.holds.-> SLOTS
+    DROP -.fold.-> CX
+    classDef entry fill:#00E5E5,color:#000,stroke:#000,stroke-width:3px
+    classDef spine fill:#000,color:#fff,stroke:#000,stroke-width:2px
+    classDef dna fill:#fff,color:#000,stroke:#000,stroke-width:2px
+    classDef slotb fill:#000,color:#fff,stroke:#000,stroke-width:3px
+    classDef fold fill:#FFD400,color:#000,stroke:#000,stroke-width:3px
+    classDef drop fill:#fff,color:#000,stroke:#000,stroke-width:1.5px,stroke-dasharray:6 4
+    classDef note fill:#fff,color:#000,stroke:#000,stroke-width:1.5px,stroke-dasharray:4 4
+```
 
 ### Classification
 
@@ -181,8 +231,8 @@ Stored in bits 0–1 of each section entry's `flags`:
 | Bits | Class | Meaning |
 |------|-------|---------|
 | `0b00` | **DNA** | core project identity |
-| `0b01` | **Context** | runtime / supplementary |
-| `0b10` | **Pointer** | documentation reference (`docs`) |
+| `0b01` | **Context** | derived output (`scores`) + the fold target (`context`) |
+| `0b10` | **Pointer** | reserved (no canonical chunk uses it; the FafData truth has no `docs`) |
 | `0b11` | Reserved | unused |
 
 ### Priority / budget loading

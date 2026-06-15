@@ -480,9 +480,10 @@ another_custom:
         assert!(st.index_of("project").is_some());
         assert!(st.index_of("tech_stack").is_some());
         assert!(st.index_of("commands").is_some());
-        assert!(st.index_of("docs").is_some());
 
-        // Closed canonical: non-canonical keys never become section names
+        // Closed canonical: non-canonical keys never become section names.
+        // `docs` is NOT in faf-cli FafData → it folds, same as custom keys.
+        assert!(st.index_of("docs").is_none());
         assert!(st.index_of("custom_field").is_none());
         assert!(st.index_of("another_custom").is_none());
     }
@@ -599,9 +600,11 @@ another_custom:
         assert!(project.is_some());
         assert!(project.unwrap().contains("full-project"));
 
-        let docs = result.get_section_string_by_name("docs");
-        assert!(docs.is_some());
-        assert!(docs.unwrap().contains("README.md"));
+        // `docs` is non-canonical → folded into context, not its own section.
+        assert!(result.get_section_string_by_name("docs").is_none());
+        let context = result.get_section_string_by_name("context").unwrap();
+        assert!(context.contains("docs"));
+        assert!(context.contains("README.md"));
     }
 
     // ─── Classification ───
@@ -619,18 +622,23 @@ another_custom:
         assert!(dna_names.contains(&"tech_stack".to_string()));
         assert!(dna_names.contains(&"commands".to_string()));
         assert!(dna_names.contains(&"architecture".to_string()));
-        assert!(dna_names.contains(&"context".to_string()));
+
+        // `context` is Context-class (the fold target), not DNA.
+        let ctx_names: Vec<String> = result
+            .context_sections()
+            .iter()
+            .map(|e| result.section_name(e))
+            .collect();
+        assert!(ctx_names.contains(&"context".to_string()));
     }
 
     #[test]
-    fn test_classification_pointer() {
+    fn test_no_pointer_section_in_fafdata_truth() {
+        // faf-cli FafData has no `docs` (or any Pointer-class) top-level key,
+        // so a compiled brick has no Pointer section.
         let bytes = compile(full_yaml(), &opts()).unwrap();
         let result = decompile(&bytes).unwrap();
-
-        let ptr = result.pointer_section();
-        assert!(ptr.is_some());
-        let ptr_name = result.section_name(ptr.unwrap());
-        assert_eq!(ptr_name, "docs");
+        assert!(result.pointer_section().is_none());
     }
 
     // ─── String table ───
@@ -663,8 +671,8 @@ another_custom:
             match name.as_str() {
                 "faf_version" | "project" => assert!(entry.priority.is_critical()),
                 "commands" => assert_eq!(entry.priority.value(), 180),
-                "architecture" | "docs" => assert_eq!(entry.priority.value(), 128),
-                "context" => assert_eq!(entry.priority.value(), 64),
+                "architecture" => assert_eq!(entry.priority.value(), 128),
+                "context" | "scores" => assert_eq!(entry.priority.value(), 64),
                 _ => {}
             }
         }
@@ -674,34 +682,31 @@ another_custom:
 
     #[test]
     fn test_all_canonical_chunks_compile() {
+        // All 13 faf-cli FafData top-level keys, each becomes a section.
         let yaml = r#"faf_version: 2.5.0
 project:
   name: all-types
-instant_context:
-  summary: test
-human_context:
-  who: devs
+app_type: cli
+about:
+  represents: Wolfe-Jam/source
 stack:
   build: cargo
+human_context:
+  who: devs
+monorepo:
+  packages_count: 3
 tech_stack:
   - Rust
 key_files:
   - main.rs
 commands:
   build: make
-monorepo:
-  packages_count: 3
 architecture:
   style: monolith
+scores:
+  total: 100
 context:
   note: x
-bi_sync:
-  enabled: true
-meta:
-  extra: data
-generated: 2026-06-12
-docs:
-  readme: README.md
 "#;
         let bytes = compile(yaml, &opts()).unwrap();
         let result = decompile(&bytes).unwrap();
@@ -710,23 +715,21 @@ docs:
         for key in &[
             "faf_version",
             "project",
-            "instant_context",
-            "human_context",
+            "app_type",
+            "about",
             "stack",
+            "human_context",
+            "monorepo",
             "tech_stack",
             "key_files",
             "commands",
-            "monorepo",
             "architecture",
+            "scores",
             "context",
-            "bi_sync",
-            "meta",
-            "generated",
-            "docs",
         ] {
             assert!(
                 st.index_of(key).is_some(),
-                "Expected '{}' in string table",
+                "Expected canonical chunk '{}' in string table",
                 key
             );
         }
