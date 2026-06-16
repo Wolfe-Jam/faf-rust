@@ -1,0 +1,38 @@
+faf_version: 2.5.0
+project:
+  name: titan
+  goal: Enterprise platform
+  main_language: TypeScript
+human_context:
+  who: Platform team
+  what: Multi-tenant SaaS
+  why: Scale
+  where: AWS
+  when: Production
+  how: Monorepo
+stack:
+  frontend: React
+  css_framework: Tailwind
+  ui_library: Radix
+  state_management: Redux
+  backend: Node
+  api_type: GraphQL
+  runtime: Node
+  database: Postgres
+  connection: Prisma
+  hosting: AWS
+  build: Turbo
+  cicd: GitHub Actions
+  monorepo_tool: Turborepo
+  package_manager: pnpm
+  workspaces: "yes"
+  admin: Retool
+  cache: Redis
+  search: Elastic
+  storage: S3
+monorepo:
+  packages_count: 12
+  build_orchestrator: Turbo
+  versioning_strategy: changesets
+  shared_configs: shared-tsconfig
+  remote_cache: Vercel
