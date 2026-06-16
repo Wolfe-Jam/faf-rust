@@ -245,6 +245,18 @@ deterministic result.
 
 ---
 
+## Stability
+
+**FAFb wire v2 is frozen.** The byte layout is immutable, enforced by a
+byte-exact golden-master test in the reference crate. `compile()` must reproduce
+the vendored `.fafb` byte-for-byte; any structural change is caught immediately.
+
+New capabilities ship only as forward-compatible additions — new chunks or flag
+bits that older readers skip. We do not break v2.
+
+Because the `.faf` source is always authoritative, you **recompile, never
+migrate**. Nothing gets trapped in an old binary.
+
 ## Versioning
 
 - **v2 only.** A reader MUST reject any file whose `version_major` is not 2

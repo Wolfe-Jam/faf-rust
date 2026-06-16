@@ -17,6 +17,14 @@
 //! (`IncompatibleVersion`) — re-compile from the `.faf` source, which is always
 //! the source of truth.
 //!
+//! **Stability — FAFb wire v2 is frozen.** The byte layout is immutable,
+//! enforced by a byte-exact golden-master test in this crate (`compile()` must
+//! reproduce the vendored `.fafb` byte-for-byte; any structural change is caught
+//! immediately). New capabilities ship only as forward-compatible additions —
+//! chunks or flag bits older readers skip; we do not break v2. Because the
+//! `.faf` source is always authoritative, you recompile, never migrate —
+//! nothing gets trapped in an old binary.
+//!
 //! ## Usage
 //!
 //! ```rust
