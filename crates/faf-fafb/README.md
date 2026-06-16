@@ -28,6 +28,18 @@ assert!(result.get_section_string_by_name("project").unwrap().contains("my-proje
 **v2 only** — FAFb v1 is pre-release history and is rejected on read;
 re-compile from the `.faf` source. Full spec: [`BINARY-FORMAT.md`](BINARY-FORMAT.md).
 
+## Stability
+
+**FAFb wire v2 is frozen.** The byte layout is immutable, enforced by a
+byte-exact golden-master test in the crate: `compile()` must reproduce the
+vendored `.fafb` byte-for-byte; any structural change is caught immediately.
+
+New capabilities ship only as forward-compatible additions — new chunks or flag
+bits that older readers skip. We do not break v2.
+
+Because the `.faf` source is always authoritative, you **recompile, never
+migrate**. Nothing gets trapped in an old binary.
+
 Part of the [`faf-rust`](https://github.com/Wolfe-Jam/faf-rust) workspace.
 
 ## License
