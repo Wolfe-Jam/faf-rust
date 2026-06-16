@@ -6,7 +6,7 @@
 //! here — the same engine that runs in the CLI and the MCP server runs in the
 //! browser and at the edge, so there is nothing to drift.
 //!
-//! 8 pure-function exports. No classes. JSON / bytes in, JSON / bytes out.
+//! 7 pure-function exports. No classes. JSON / bytes in, JSON / bytes out.
 //!
 //! # Usage (JavaScript)
 //! ```js
@@ -71,14 +71,6 @@ pub fn fafb_info(bytes: &[u8]) -> Result<String, JsValue> {
     fafb_json::fafb_info(bytes).map_err(|e| JsValue::from_str(&e))
 }
 
-/// **Deprecated.** The kernel always scores against 33 slots, so there is no
-/// separate "enterprise" tier — this is now an alias of [`score_faf`], kept
-/// for API compatibility with pre-3.0 callers.
-#[wasm_bindgen]
-pub fn score_faf_enterprise(yaml: String) -> Result<String, JsValue> {
-    score_faf(yaml)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -112,14 +104,6 @@ mod tests {
         assert!(result.contains("\"score\":"));
         assert!(result.contains("\"tier\":"));
         assert!(result.contains("\"total\":33"));
-    }
-
-    #[test]
-    fn test_score_faf_enterprise_is_alias() {
-        // v3: enterprise is an alias of score_faf (both always-33).
-        let a = score_faf("project:\n  name: x".to_string()).unwrap();
-        let b = score_faf_enterprise("project:\n  name: x".to_string()).unwrap();
-        assert_eq!(a, b);
     }
 
     #[test]

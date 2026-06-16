@@ -1,128 +1,109 @@
-# faf-rust-sdk v2
+# faf-rust-sdk
 
-**Persistent Project Context for Rust. Parse, validate, score, FAFb (binary).**
+**`.faf` is to context what `package.json` is to dependencies.**
 
-**FAF defines. MD instructs. AI codes.**
+One small, portable file that says what your project is, how it's built, and why —
+readable at a glance by a teammate, your own code, or an AI assistant. `.faf` is the
+**Foundational AI-context Format**: plain, human-readable YAML, an open IANA-registered
+standard. `faf-rust-sdk` is the Rust way to read, validate, score, and compile it.
 
-High-performance Rust SDK for **FAF (Foundational AI-context Format)** — parsing, scoring, validation, and the FAFb binary format.
+**IANA media type:** `application/vnd.faf+yaml`
 
-**IANA Media Type:** `application/vnd.faf+yaml`
+## Why it exists
 
-## v2 — The Definitive Edition
+AI assistants start cold every session — they re-learn your stack, your layout, your
+intent, every time. A `.faf` file is the portable context that fixes that: write it
+once, and any AI tool (or your own code) can load a complete, structured picture of the
+project in a single read. The score tells you how complete that picture is.
 
-The definitive binary format for AI context. v2 ships FAFb — the compiled form of `.faf` files, future-proofed for any repo size, complexity, or organization. The FAF creator fell in love with IFF in the 90s — working with the Interchange File Format that Commodore created for the Amiga across early computer graphics engines and apps. That chunked binary architecture influenced everything that came after. Microsoft literally riffed on it with RIFF. IFF got it right the first time.
-
-FAFb brings that same architecture into the AI era: a **string table** replacing the fixed enum, the same pattern ELF and IFF have used for decades. FAF creator realized every YAML key can just become a named section. No limits. No "Unknown" fallback. No artificial ceiling. Sections are classified as DNA (core identity), Context (supplementary), or Pointer (documentation). Works for a solo dev or a 680-engineer enterprise.
-
-This is a significant free upgrade. The SDK is MIT, the format is an IANA-registered open standard, and the binary spec is public. We're making the standard bulletproof so everyone can build on it.
-
-## Installation
+## Install
 
 ```toml
 [dependencies]
-faf-rust-sdk = "2.0"
+faf-rust-sdk = "3.0"
 ```
 
-## Quick Start
+## Quick start
 
 ```rust
-use faf_rust_sdk::{parse, validate, compress, CompressionLevel};
+use faf_rust_sdk::{parse, validate};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let content = r#"
 faf_version: 2.5.0
 project:
   name: my-app
-  goal: Build something great
-instant_context:
-  what_building: CLI tool
-  tech_stack: Rust, Python
-  key_files:
-    - src/main.rs
+  goal: Ship a fast CLI
+  main_language: Rust
+human_context:
+  who: Rust developers
+  what: A command-line tool
+  why: Speed without ceremony
 stack:
-  backend: Rust
+  build: cargo
+tech_stack:
+  - Rust
+key_files:
+  - src/main.rs
 "#;
 
-    // Parse
     let faf = parse(content)?;
-
-    // Access
     println!("Project: {}", faf.project_name());
-    println!("Stack: {:?}", faf.tech_stack());
 
-    // Validate
     let result = validate(&faf);
-    println!("Valid: {}, Score: {}%", result.valid, result.score);
-
-    // Compress for token optimization
-    let minimal = compress(&faf, CompressionLevel::Minimal);
-
+    println!("Valid: {} — Score: {}%", result.valid, result.score);
     Ok(())
 }
 ```
 
-## FAFb Binary Format
+## Scoring
 
-Compile `.faf` YAML to a sealed binary. YAML is source code, FAFb is the compiled output.
+`.faf` files score **0–100** by how complete the context is, measured against a fixed
+33-slot model. A higher score means an AI has more of what it needs to work without
+guessing. The score is deterministic — the same file always scores the same.
 
-```rust
-use faf_rust_sdk::binary::{compile, decompile, CompileOptions};
+## Compression
 
-// Compile YAML → binary
-let yaml = "faf_version: 2.5.0\nproject:\n  name: my-project\n";
-let opts = CompileOptions { use_timestamp: false };
-let bytes = compile(yaml, &opts).unwrap();
-
-// Decompile binary → structured result
-let result = decompile(&bytes).unwrap();
-let name = result.get_section_string_by_name("project").unwrap();
-
-// Query by classification
-let dna = result.dna_sections();         // Core identity sections
-let ctx = result.context_sections();     // Supplementary sections
-let ptr = result.pointer_section();      // Documentation references
-```
-
-### Binary Layout
-
-```
-HEADER (32 bytes)       — Magic "FAFB", version, flags, CRC32 checksum
-SECTION DATA (variable) — Each YAML key → one section, priority-ordered
-STRING TABLE (appended) — Section name index, unlimited names, O(1) lookup
-SECTION TABLE (at end)  — 16 bytes per entry: name, priority, offset, length, tokens, classification
-```
-
-## Features
-
-### Parsing & Validation
-
-```rust
-use faf_rust_sdk::{parse, validate};
-
-let faf = parse(content)?;
-let result = validate(&faf);
-println!("Score: {}%", result.score);
-```
-
-### Compression Levels
-
-Optimize for context window constraints:
+Trim context to fit a model's window:
 
 ```rust
 use faf_rust_sdk::{compress, CompressionLevel};
 
-let minimal = compress(&faf, CompressionLevel::Minimal);   // ~150 tokens
+let minimal  = compress(&faf, CompressionLevel::Minimal);   // ~150 tokens
 let standard = compress(&faf, CompressionLevel::Standard);  // ~400 tokens
-let full = compress(&faf, CompressionLevel::Full);           // ~800 tokens
+let full     = compress(&faf, CompressionLevel::Full);      // ~800 tokens
 ```
 
-### Axum Integration
+## FAFb — the binary form
 
-Add FAF project context to any Axum server:
+`.faf` is the source; **FAFb** is the compiled output — a small, sealed binary with a
+checksum, for shipping or caching context fast.
+
+```rust
+use faf_rust_sdk::binary::{compile, decompile, CompileOptions};
+
+let bytes  = compile(yaml, &CompileOptions { use_timestamp: false })?;
+let result = decompile(&bytes)?;
+let name   = result.get_section_string_by_name("project");
+```
+
+### How it works (for the curious)
+
+FAFb is modeled on **IFF** — the chunked format Commodore created for the Amiga in the
+'80s (Microsoft's RIFF and the ELF executable format use the same idea). Every YAML key
+becomes a named section via a **string table**, so there's no fixed enum and no "Unknown"
+ceiling. Sections are classified **DNA** (core identity) or **Context** (supplementary),
+ordered by priority, and sealed with a CRC32 checksum. The section table uses 16 bytes
+per entry for O(1) lookup. Same format for a one-file script or a 600-engineer monorepo.
+
+## Axum integration
+
+Add FAF project context to any Axum server — parsed once at startup, then a single
+`Arc::clone` per request:
 
 ```toml
 [dependencies]
-faf-rust-sdk = { version = "2.0", features = ["axum"] }
+faf-rust-sdk = { version = "3.0", features = ["axum"] }
 ```
 
 ```rust
@@ -138,29 +119,31 @@ async fn handler(faf: FafContext) -> String {
 }
 ```
 
-The `.faf` file is parsed **once** at startup. Per-request cost is a single `Arc::clone`.
-
 ## Testing
 
-**175 tests passing** — WJTTC Championship-Grade coverage:
+faf-rust-sdk's own suite is **58 WJTTC tests** — 16 Brake (safety), 22 Engine (core),
+20 Aero (edge). And because it's a thin facade, every API it exposes is already covered
+by the crates beneath it — faf-kernel (62) and faf-fafb (103). **224 tests pass across
+the three crates.**
 
 ```bash
-cargo test
+cargo test -p faf-rust-sdk -p faf-kernel -p faf-fafb   # 224 passing
 ```
 
-## See Also
+## Part of the FAF Rust workspace
 
-- **[faf-wasm-sdk](https://github.com/faf-foundation/faf-wasm-sdk)** — Same FAFb format compiled to WASM for browsers and edge compute
-- **[mcpaas](https://crates.io/crates/mcpaas)** — Stream FAF context live via Radio Protocol
+One kernel, many shells:
 
-If `faf-rust-sdk` has been useful, consider starring the repo — it helps others find it.
+- [`faf-kernel`](https://crates.io/crates/faf-kernel) — parse, validate, score (the engine)
+- [`faf-fafb`](https://crates.io/crates/faf-fafb) — the FAFb v2 binary format
+- [`faf-wasm-sdk`](https://crates.io/crates/faf-wasm-sdk) — the same engine for the browser and edge (WASM)
 
 ## Links
 
 - [faf.one](https://faf.one) — project home
-- [IANA Registration](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml) — `application/vnd.faf+yaml`
+- [IANA registration](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml) — `application/vnd.faf+yaml`
 - [FAF on Zenodo](https://doi.org/10.5281/zenodo.18251362) — academic paper
-- [FAF on Grokipedia](https://grokipedia.com/page/faf-file-format) — 28 citations
+- [FAF on Grokipedia](https://grokipedia.com/page/faf-file-format)
 
 ## License
 
@@ -170,10 +153,10 @@ MIT
 
 ### Get the CLI
 
-> **faf-cli** — The original AI-Context CLI. A must-have for every builder.
+> **faf-cli** — the original AI-context CLI. A must-have for every builder.
 
 ```bash
 npx faf-cli auto
 ```
 
-**Anthropic MCP [#2759](https://github.com/modelcontextprotocol/servers/pull/2759)** · **IANA Registered:** `application/vnd.faf+yaml` · [faf.one](https://faf.one) · [npm](https://www.npmjs.com/package/faf-cli)
+**Anthropic MCP [#2759](https://github.com/modelcontextprotocol/servers/pull/2759)** · **IANA:** `application/vnd.faf+yaml` · [faf.one](https://faf.one) · [npm](https://www.npmjs.com/package/faf-cli)

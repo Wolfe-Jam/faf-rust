@@ -4,13 +4,27 @@ All notable changes to faf-rust-sdk will be documented in this file.
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-06-16
+
+The facade edition. faf-rust-sdk is now a thin shell over the consolidated
+`faf-rust` workspace — one kernel, many shells.
+
+### Changed
+- **Now a facade** over [`faf-kernel`](https://crates.io/crates/faf-kernel)
+  (parse / validate / score) + [`faf-fafb`](https://crates.io/crates/faf-fafb)
+  (FAFb v2 binary). The engine no longer lives in this crate; it re-exports the
+  workspace crates, so the CLI, WASM, and SDK all run the same code — no drift.
+- **Scoring is the always-33 Mk4 model** (via faf-kernel): a fixed 33-slot universe,
+  `slotignored` sets the active denominator, deterministic 0–100.
+- README rewritten plain-English-first (".faf is to context what package.json is to
+  dependencies"); every example verified against the live API.
+- Rust edition 2021 → 2024; declared MSRV `rust-version = "1.85"`.
+
 ### Added
 - Trusted Publishing (OIDC) workflow for crates.io releases (`publish-crate.yml`)
 - Weekly cargo-audit security CI (`audit.yml`)
-
-### Changed
-- Rust edition 2021 → 2024
-- Declared MSRV: `rust-version = "1.85"`
+- WJTTC suite for the facade — 58 tests (16 Brake / 22 Engine / 20 Aero); 224 across
+  the stack with faf-kernel (62) and faf-fafb (103).
 
 ## [2.0.1] - 2026-03-20
 
