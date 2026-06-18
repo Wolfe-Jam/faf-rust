@@ -1,6 +1,6 @@
 [package]
 name = "faf-wasm-sdk"
-version = "3.0.0"
+version = "3.0.1"
 description = "FAF WASM SDK — the kernel for the edge. wasm-bindgen shell over faf-kernel (scoring) + faf-fafb (binary v2). Same engine as the CLI, no drift."
 edition.workspace = true
 rust-version.workspace = true
@@ -8,6 +8,7 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 homepage = "https://faf.one"
+documentation = "https://docs.rs/faf-wasm-sdk"
 keywords = ["faf", "wasm", "ai-context", "scoring", "edge"]
 categories = ["wasm", "development-tools"]
 readme = "README.md"

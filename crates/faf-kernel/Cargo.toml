@@ -1,6 +1,6 @@
 [package]
 name = "faf-kernel"
-version = "1.0.0"
+version = "1.0.1"
 description = "The FAF kernel — parse, validate, and score .faf files (IANA application/vnd.faf+yaml). One kernel, many shells."
 edition.workspace = true
 rust-version.workspace = true
@@ -8,6 +8,7 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 homepage = "https://faf.one"
+documentation = "https://docs.rs/faf-kernel"
 keywords = ["faf", "ai-context", "yaml", "scoring", "mk4"]
 categories = ["parser-implementations", "development-tools"]
 readme = "README.md"

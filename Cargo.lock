@@ -156,7 +156,7 @@ dependencies = [
 
 [[package]]
 name = "faf-fafb"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "byteorder",
  "crc32fast",
@@ -166,7 +166,7 @@ dependencies = [
 
 [[package]]
 name = "faf-kernel"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "serde",
  "serde_yaml_ng",
@@ -189,7 +189,7 @@ dependencies = [
 
 [[package]]
 name = "faf-wasm-sdk"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "faf-fafb",
  "faf-kernel",

@@ -1,6 +1,6 @@
 [package]
 name = "faf-fafb"
-version = "1.0.1"
+version = "1.0.2"
 description = "FAFb v2 — the compiled binary form of .faf. Closed-canonical IFF-style chunks: 33 slots, fixed chunk set, byte-identical output. The brick."
 edition.workspace = true
 rust-version.workspace = true
@@ -8,6 +8,7 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 homepage = "https://faf.one"
+documentation = "https://docs.rs/faf-fafb"
 keywords = ["faf", "fafb", "binary", "ai-context", "iff"]
 categories = ["encoding", "development-tools"]
 readme = "README.md"

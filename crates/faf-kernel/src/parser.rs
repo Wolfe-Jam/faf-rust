@@ -9,15 +9,19 @@ use crate::types::FafData;
 /// FAF parsing errors
 #[derive(Error, Debug)]
 pub enum FafError {
+    /// The input was empty or whitespace-only.
     #[error("Empty content")]
     EmptyContent,
 
+    /// The content was not valid YAML.
     #[error("Invalid YAML: {0}")]
     YamlError(#[from] serde_yaml_ng::Error),
 
+    /// An I/O error occurred while reading a file.
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 
+    /// A required field was absent (the field name is included).
     #[error("Missing required field: {0}")]
     MissingField(String),
 }

@@ -41,11 +41,15 @@ pub struct Mk4Result {
     pub score: u32,
     /// Canonical tier name: TROPHY, GOLD, SILVER, BRONZE, GREEN, YELLOW, RED, WHITE.
     pub tier: String,
+    /// Slots filled with valid, project-specific data (the numerator).
     pub populated: u32,
+    /// Slots explicitly marked not-applicable (excluded from the denominator).
     pub ignored: u32,
+    /// Active denominator: `total − ignored`.
     pub active: u32,
     /// Always 33.
     pub total: u32,
+    /// Per-slot breakdown: slot name → its [`SlotState`].
     pub slots: Vec<(String, SlotState)>,
 }
 
@@ -90,6 +94,7 @@ pub fn score(yaml: &str) -> Result<Mk4Result, String> {
 pub struct Mk4Scorer;
 
 impl Mk4Scorer {
+    /// Create a new scorer.
     pub fn new() -> Self {
         Self
     }
