@@ -29,6 +29,11 @@ Older crate names stay under FAF ownership — see the [supersession map](docs/C
 ```bash
 cargo build --workspace
 cargo test --workspace
+
+# Full ship bar (same gates as GitHub CI — run before push)
+bash scripts/ci.sh
+# Optional: block push on red CI twin
+bash scripts/install-hooks.sh
 ```
 
 ## Links
