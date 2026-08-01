@@ -24,7 +24,7 @@ faf-rust-sdk = "3"
 ```
 
 **Do not** publish foundation crates from the old standalone repos  
-`Wolfe-Jam/faf-rust-sdk` or `Wolfe-Jam/faf-wasm-sdk` — those trees are **historical**; crates.io 3.x already points `repository` at **this** monorepo.
+[`Wolfe-Jam/faf-rust-sdk`](https://github.com/Wolfe-Jam/faf-rust-sdk) or [`Wolfe-Jam/faf-wasm-sdk`](https://github.com/Wolfe-Jam/faf-wasm-sdk) — those trees are **historical and archived** on GitHub (2026-08-01); crates.io 3.x already points `repository` at **this** monorepo.
 
 ---
 
@@ -46,8 +46,8 @@ faf-rust-sdk = "3"
 | crates.io name | Status | Use instead |
 |----------------|--------|-------------|
 | `faf-rust-sdk` **1.x / 2.x** | Prior majors (still downloadable) | **`faf-rust-sdk` 3.x** (this workspace) |
-| Standalone git `faf-rust-sdk` @ 2.0.1 tree | Historical monorepo | **github.com/Wolfe-Jam/faf-rust** |
-| Standalone git `faf-wasm-sdk` @ 2.x tree | Historical monorepo | **github.com/Wolfe-Jam/faf-rust** · crate **3.x** |
+| Standalone git `faf-rust-sdk` @ 2.0.1 tree | **Archived** historical monorepo | **github.com/Wolfe-Jam/faf-rust** |
+| Standalone git `faf-wasm-sdk` @ 2.x tree | **Archived** historical monorepo | **github.com/Wolfe-Jam/faf-rust** · crate **3.x** |
 | `fafb` | Early name | **`faf-fafb`** |
 | `faf-engine` | Early name | **`faf-kernel`** |
 | `faf-mcp` | Early name | **`rust-faf-mcp`** |
