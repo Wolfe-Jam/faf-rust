@@ -1,10 +1,10 @@
 faf_version: "3.0"
 project:
   name: faf-rust-sdk
-  goal: High-performance Rust SDK for FAF — parse, validate, score, .fafb binary. Zero-copy, inference-optimized. IANA-registered application/vnd.faf+yaml. The public crate xai-faf-rust re-exports.
+  goal: High-performance Rust SDK for FAF — parse, validate, score, .fafb binary. Zero-copy, inference-optimized. IANA-registered application/vnd.faf+yaml. A thin facade over faf-kernel + faf-fafb.
   main_language: Rust
   type: sdk
-  framework: serde + serde_yaml_ng
+  framework: faf-kernel + faf-fafb (facade)
 stack:
   frontend: slotignored
   css_framework: slotignored
@@ -12,7 +12,7 @@ stack:
   state_management: slotignored
   backend: slotignored
   api_type: slotignored
-  runtime: Native (Rust 2021 Edition)
+  runtime: Native (Rust 2024 Edition)
   database: slotignored
   connection: slotignored
   hosting: slotignored
@@ -30,7 +30,7 @@ human_context:
   what: Rust SDK for FAF — parser, validator, scorer, .fafb binary (string table, chunk classification, enterprise scale)
   why: Zero-copy parsing optimized for inference workloads — the Rust-native FAF substrate
   where: crates.io, GitHub (Wolfe-Jam/faf-rust-sdk)
-  when: Production since November 2025 — v2.0.1, IANA-registered (application/vnd.faf+yaml)
+  when: Production since November 2025 — now v3.1.0, IANA-registered (application/vnd.faf+yaml)
   how: cargo add faf-rust-sdk — parse/validate/score/compile via the crate API
 monorepo:
   packages_count: slotignored

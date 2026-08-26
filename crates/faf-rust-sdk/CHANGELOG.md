@@ -21,7 +21,6 @@ The facade edition. faf-rust-sdk is now a thin shell over the consolidated
 - Rust edition 2021 → 2024; declared MSRV `rust-version = "1.85"`.
 
 ### Added
-- Trusted Publishing (OIDC) workflow for crates.io releases (`publish-crate.yml`)
 - Weekly cargo-audit security CI (`audit.yml`)
 - WJTTC suite for the facade — 58 tests (16 Brake / 22 Engine / 20 Aero); 224 across
   the stack with faf-kernel (62) and faf-fafb (103).
