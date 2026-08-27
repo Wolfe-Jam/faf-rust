@@ -233,13 +233,19 @@ conventions:
   - "Conventional Commits"
 "#;
         let faf = parse(content).unwrap();
-        assert_eq!(faf.commands().get("build").map(String::as_str), Some("cargo build"));
+        assert_eq!(
+            faf.commands().get("build").map(String::as_str),
+            Some("cargo build")
+        );
         let security = faf.data.security.as_ref().unwrap();
         assert_eq!(security.secrets.as_deref(), Some(".env"));
         assert_eq!(security.never, vec![".env".to_string()]);
         let ai = faf.data.ai_instructions.as_ref().unwrap();
         assert_eq!(ai.warnings, vec!["Use bun, not npm".to_string()]);
-        assert_eq!(faf.data.conventions, vec!["Conventional Commits".to_string()]);
+        assert_eq!(
+            faf.data.conventions,
+            vec!["Conventional Commits".to_string()]
+        );
     }
 
     #[test]
