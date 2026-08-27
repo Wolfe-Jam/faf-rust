@@ -14,7 +14,7 @@ the edge all agree **by construction** — parity is a property of the build, no
 
 ```toml
 [dependencies]
-faf-kernel = "1.0"
+faf-kernel = "1.1"
 ```
 
 ## Quick start
@@ -40,10 +40,19 @@ written `slotignored` at generation time; the kernel only reads the markers. The
 
 **Tiers:** Trophy 🏆 is the only emoji; sub-Trophy tiers are clean Unicode (★ ◆ ◇ ● ○ ♡).
 
+## AGENTS.md-ready fields (1.1.0)
+
+`FafData` also carries `commands` (top-level build/test/lint/dev map), `security`
+(secrets/example/never), `ai_instructions` (warnings/working_style), and `conventions` —
+the fields an AGENTS.md generator (e.g. `faf-cli`'s `faf export --agents`) actually reads
+from a `.faf` file. `FafFile::commands()` reads the top-level `commands` first, falling
+back to `instant_context.commands` for older `.faf` files that nest them there. Additive —
+no existing field renamed or removed.
+
 ## Testing
 
-**62 WJTTC tests** (Brake / Engine / Aero). As the kernel beneath every shell, this is the
-code those shells are tested against too — **233 tests pass across the FAF Rust workspace.**
+**28 WJTTC tests** (Brake / Engine / Aero). As the kernel beneath every shell, this is the
+code those shells are tested against too — **236 tests pass across the FAF Rust workspace.**
 
 ```bash
 cargo test -p faf-kernel
