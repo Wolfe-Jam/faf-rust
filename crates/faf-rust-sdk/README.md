@@ -20,7 +20,7 @@ project in a single read. The score tells you how complete that picture is.
 
 ```toml
 [dependencies]
-faf-rust-sdk = "3.0"
+faf-rust-sdk = "3.1"
 ```
 
 ## Quick start
@@ -61,6 +61,13 @@ key_files:
 `.faf` files score **0–100** by how complete the context is, measured against a fixed
 33-slot model. A higher score means an AI has more of what it needs to work without
 guessing. The score is deterministic — the same file always scores the same.
+
+## AGENTS.md-ready fields (3.1)
+
+`FafData` (re-exported from `faf-kernel` 1.1) also carries `commands`, `security`,
+`ai_instructions`, and `conventions` — the fields an AGENTS.md generator reads from a
+`.faf` file. Pure re-export bump; no logic in this crate. See
+[`faf-kernel`](https://crates.io/crates/faf-kernel)'s own docs for field detail.
 
 ## Compression
 
@@ -103,7 +110,7 @@ Add FAF project context to any Axum server — parsed once at startup, then a si
 
 ```toml
 [dependencies]
-faf-rust-sdk = { version = "3.0", features = ["axum"] }
+faf-rust-sdk = { version = "3.1", features = ["axum"] }
 ```
 
 ```rust
@@ -123,11 +130,11 @@ async fn handler(faf: FafContext) -> String {
 
 faf-rust-sdk's own suite is **58 WJTTC tests** — 16 Brake (safety), 22 Engine (core),
 20 Aero (edge). And because it's a thin facade, every API it exposes is already covered
-by the crates beneath it — faf-kernel (62) and faf-fafb (103). **224 tests pass across
+by the crates beneath it — faf-kernel (58) and faf-fafb (100). **216 tests pass across
 the three crates.**
 
 ```bash
-cargo test -p faf-rust-sdk -p faf-kernel -p faf-fafb   # 224 passing
+cargo test -p faf-rust-sdk -p faf-kernel -p faf-fafb   # 216 passing
 ```
 
 ## Part of the FAF Rust workspace
