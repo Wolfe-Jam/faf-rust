@@ -1,5 +1,6 @@
 //! Core FAF parser - optimized for inference workloads
 
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use thiserror::Error;
@@ -89,6 +90,20 @@ impl FafFile {
     /// Check if score indicates high quality (>= 70%)
     pub fn is_high_quality(&self) -> bool {
         self.score().map(|s| s >= 70).unwrap_or(false)
+    }
+
+    /// Get commands (build/test/lint/dev), checking top-level first and
+    /// falling back to `instant_context.commands` for older `.faf` files
+    /// that nest them there.
+    pub fn commands(&self) -> HashMap<String, String> {
+        if !self.data.commands.is_empty() {
+            return self.data.commands.clone();
+        }
+        self.data
+            .instant_context
+            .as_ref()
+            .map(|ic| ic.commands.clone())
+            .unwrap_or_default()
     }
 }
 
@@ -195,6 +210,67 @@ stack:
         assert_eq!(faf.tech_stack(), Some("Rust, Python"));
         assert_eq!(faf.key_files().len(), 2);
         assert!(faf.is_high_quality());
+    }
+
+    #[test]
+    fn test_parse_top_level_commands_security_ai_instructions_conventions() {
+        let content = r#"
+faf_version: 2.5.0
+project:
+  name: full-test
+commands:
+  build: cargo build
+  test: cargo test
+security:
+  secrets: .env
+  example: .env.example
+  never:
+    - .env
+ai_instructions:
+  warnings:
+    - "Use bun, not npm"
+conventions:
+  - "Conventional Commits"
+"#;
+        let faf = parse(content).unwrap();
+        assert_eq!(faf.commands().get("build").map(String::as_str), Some("cargo build"));
+        let security = faf.data.security.as_ref().unwrap();
+        assert_eq!(security.secrets.as_deref(), Some(".env"));
+        assert_eq!(security.never, vec![".env".to_string()]);
+        let ai = faf.data.ai_instructions.as_ref().unwrap();
+        assert_eq!(ai.warnings, vec!["Use bun, not npm".to_string()]);
+        assert_eq!(faf.data.conventions, vec!["Conventional Commits".to_string()]);
+    }
+
+    #[test]
+    fn test_commands_falls_back_to_instant_context() {
+        let content = r#"
+faf_version: 2.5.0
+project:
+  name: legacy-shape
+instant_context:
+  commands:
+    build: cargo build --release
+"#;
+        let faf = parse(content).unwrap();
+        assert_eq!(
+            faf.commands().get("build").map(String::as_str),
+            Some("cargo build --release")
+        );
+    }
+
+    #[test]
+    fn test_missing_new_fields_default_empty() {
+        let content = r#"
+faf_version: 2.5.0
+project:
+  name: minimal
+"#;
+        let faf = parse(content).unwrap();
+        assert!(faf.commands().is_empty());
+        assert!(faf.data.security.is_none());
+        assert!(faf.data.ai_instructions.is_none());
+        assert!(faf.data.conventions.is_empty());
     }
 
     #[test]

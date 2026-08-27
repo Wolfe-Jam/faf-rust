@@ -76,6 +76,10 @@ fn compress_minimal(faf: &FafFile) -> FafData {
         preferences: None,
         state: None,
         tags: Vec::new(),
+        commands: Default::default(),
+        security: None,
+        ai_instructions: None,
+        conventions: Vec::new(),
     }
 }
 
@@ -99,6 +103,10 @@ fn compress_standard(faf: &FafFile) -> FafData {
         preferences: None,
         state: None,
         tags: Vec::new(),
+        commands: Default::default(),
+        security: None,
+        ai_instructions: None,
+        conventions: Vec::new(),
     }
 }
 

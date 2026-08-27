@@ -4,6 +4,13 @@ All notable changes to faf-rust-sdk will be documented in this file.
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-08-25
+
+### Changed
+- Bumped `faf-kernel` to 1.1.0 — the re-exported `FafData` now carries
+  `commands` (top-level), `security`, `ai_instructions`, and `conventions`.
+  Pure re-export bump; no logic changes in this crate.
+
 ## [3.0.0] - 2026-06-16
 
 The facade edition. faf-rust-sdk is now a thin shell over the consolidated

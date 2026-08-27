@@ -1,6 +1,6 @@
 [package]
 name = "faf-rust-sdk"
-version = "3.0.0"
+version = "3.1.0"
 description = "Persistent Project Context for Rust. IANA-registered .faf format — the facade over faf-kernel (parse/validate/score) + faf-fafb (binary v2)."
 edition.workspace = true
 rust-version.workspace = true

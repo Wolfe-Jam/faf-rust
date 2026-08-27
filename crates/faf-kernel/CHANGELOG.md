@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0 — 2026-08-25
+
+- Added: `FafData.commands` (top-level build/test/lint/dev map), `FafData.security`
+  (secrets/example/never), `FafData.ai_instructions` (warnings/working_style),
+  `FafData.conventions` — closing the gap against what AGENTS.md generators
+  (faf-cli's `faf export --agents`) actually read from a `.faf` file.
+- Added: `FafFile::commands()` — reads top-level `commands` first, falls back to
+  `instant_context.commands` for older `.faf` files that nest them there.
+- Additive, backward compatible — no existing field renamed or removed.
+
 ## 1.0.1 — 2026-06-18
 
 - Docs: elevated README to a landing page (install, quick start, scoring, testing, sibling cross-links, links).

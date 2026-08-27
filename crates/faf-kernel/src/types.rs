@@ -55,6 +55,52 @@ pub struct FafData {
     /// Free-form classification tags.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tags: Vec<String>,
+
+    /// Top-level named commands (build/test/lint/dev) → shell invocations.
+    /// Some `.faf` files nest these under `instant_context.commands` instead;
+    /// see `FafFile::commands()` for the fallback that reads either shape.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub commands: HashMap<String, String>,
+
+    /// Secrets handling guidance — what agents must never read or commit.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub security: Option<Security>,
+
+    /// Agent-facing guardrails and working-style notes.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ai_instructions: Option<AiInstructions>,
+
+    /// Real repo conventions an agent should follow (not human↔assistant prefs).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub conventions: Vec<String>,
+}
+
+/// Secrets handling guidance — what agents must never read or commit.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Security {
+    /// Where secrets live (e.g. `.env`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub secrets: Option<String>,
+
+    /// A safe example file to point at instead (e.g. `.env.example`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub example: Option<String>,
+
+    /// Specific paths an agent must never read or commit.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub never: Vec<String>,
+}
+
+/// Agent-facing guardrails and working-style notes, surfaced in AGENTS.md.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiInstructions {
+    /// Free-form warnings an agent should see up front (e.g. "use bun, not npm").
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub warnings: Vec<String>,
+
+    /// Loose key/value working-style notes (human↔assistant interaction, not repo rules).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub working_style: Option<HashMap<String, String>>,
 }
 
 /// Core project identity — the one block every `.faf` file has.
