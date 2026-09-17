@@ -42,6 +42,9 @@ future minor version can add a chunk without breaking deployed readers.
 **v2 only** — FAFb v1 is pre-release history and is rejected on read; re-compile from the
 `.faf` source. Full spec: [`BINARY-FORMAT.md`](BINARY-FORMAT.md) · [faf.one/spec](https://faf.one/spec).
 
+Driving the FAFb CLI preview (0.9)? It writes v1 ROMs, which this crate rejects. The `.faf`
+source is always authoritative — recompile from it.
+
 ## Stability — wire v2 is frozen
 
 The byte layout is **immutable**, enforced by a byte-exact golden-master test in the crate:
@@ -54,7 +57,7 @@ gets trapped in an old binary.
 
 ## Testing
 
-**103 WJTTC tests**, including the byte-exact golden-master seal — **233 tests pass across the
+**103 WJTTC tests**, including the byte-exact golden-master seal — **236 tests pass across the
 FAF Rust workspace.**
 
 ```bash
@@ -81,12 +84,23 @@ MIT
 
 ---
 
-### Get the CLI
+### Get a CLI
 
-> **faf-cli** — the original AI-context CLI. A must-have for every builder.
+Two, for two jobs:
+
+> **faf-cli** — the original AI-context CLI, free and MIT. A must-have for every builder.
 
 ```bash
 npx faf-cli auto
 ```
+
+> **FAFb** — the Rust CLI this format comes from: always-33 slots, monorepo-aware, and
+> `faf compile` writes the ROM. Paid licence, 14-day trial, no card.
+
+**Devs wanted.** FAFb is in early access before 1.0 and we are looking for people to drive it
+on a real repo for an hour and tell us the truth:
+[faf.one/blog/fafb-early-access](https://faf.one/blog/fafb-early-access).
+
+Or stay here and play with the library — that is what it is for.
 
 **Anthropic MCP [#2759](https://github.com/modelcontextprotocol/servers/pull/2759)** · **IANA:** `application/vnd.faf+yaml` · [faf.one](https://faf.one) · [npm](https://www.npmjs.com/package/faf-cli)
