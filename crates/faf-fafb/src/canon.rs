@@ -7,9 +7,9 @@
 //! add a chunk without breaking deployed readers: writer closed, reader
 //! graceful.
 //!
-//! Closed canonical is what makes the brick deterministic: identical content
-//! produces identical bytes regardless of input key order, so a `.fafb` is
-//! content-addressable — same project context, same hash, everywhere.
+//! Closed canonical is what makes the brick addressable: canonical order is
+//! fixed, so Content ID is well-defined. Same `.faf` → same Content ID is a
+//! property of one compiler build, not of YAML-the-idea.
 
 /// Chunk classification, stored in bits 0–1 of `SectionEntry.flags`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -150,6 +150,36 @@ pub fn is_canonical(name: &str) -> bool {
     canonical_chunk(name).is_some()
 }
 
+/// Structural (`__`-prefixed) chunk names closed for spec 2.0.
+///
+/// `__score__` is deliberately absent. Unknown `__` names are a writer error
+/// and a reader pass-through.
+pub const STRUCTURAL_CHUNKS: &[&str] = &[
+    "__string_table__",
+    "__tokens__",
+    "__provenance__",
+    "__members__",
+];
+
+/// True when `name` is structural (leading `__`), whether or not it is on the
+/// closed list. Structural chunks are excluded from the Content ID.
+pub fn is_structural_name(name: &str) -> bool {
+    name.starts_with("__")
+}
+
+/// True when `name` is on the closed structural list.
+pub fn is_known_structural(name: &str) -> bool {
+    STRUCTURAL_CHUNKS.contains(&name)
+}
+
+/// `__members__` paths are POSIX, relative to the root brick, and MUST NOT
+/// contain `..`.
+pub fn is_valid_member_path(path: &str) -> bool {
+    !path.is_empty()
+        && !path.starts_with('/')
+        && !path.split('/').any(|seg| seg == ".." || seg.is_empty())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -246,6 +276,28 @@ mod tests {
         // Case-sensitive (YAML convention)
         assert!(!is_canonical("Project"));
         assert!(is_canonical("project"));
+    }
+
+    #[test]
+    fn structural_list_is_closed_without_score() {
+        assert_eq!(STRUCTURAL_CHUNKS.len(), 4);
+        assert!(is_known_structural("__string_table__"));
+        assert!(is_known_structural("__tokens__"));
+        assert!(is_known_structural("__provenance__"));
+        assert!(is_known_structural("__members__"));
+        assert!(!is_known_structural("__score__"));
+        assert!(is_structural_name("__score__"));
+        assert!(is_structural_name("__mystery__"));
+        assert!(!is_structural_name("project"));
+    }
+
+    #[test]
+    fn member_paths_reject_dotdot() {
+        assert!(is_valid_member_path("packages/billing"));
+        assert!(!is_valid_member_path("../etc/passwd"));
+        assert!(!is_valid_member_path("packages/../secret"));
+        assert!(!is_valid_member_path("/abs"));
+        assert!(!is_valid_member_path(""));
     }
 
     #[test]

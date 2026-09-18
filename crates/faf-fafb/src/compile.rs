@@ -2,9 +2,8 @@
 //!
 //! The writer emits exactly the canonical chunk set (see `canon`), in canonical
 //! order. Non-canonical top-level YAML keys are folded into the `context`
-//! chunk — nothing is lost, and the string table stays fixed. Identical
-//! content therefore produces identical bytes regardless of input key order:
-//! the brick is content-addressable.
+//! chunk — nothing is lost, and the string table stays fixed. Content ID is
+//! computed over stored payloads in this order; stamps do not enter it.
 
 use std::io::Write;
 
@@ -118,6 +117,21 @@ impl DecompiledFafb {
             .iter()
             .find(|e| e.classification() == ChunkClassification::Pointer)
     }
+
+    /// Content ID of this file (see [`crate::content_id_of`]).
+    pub fn content_id(&self) -> String {
+        super::identity::content_id_of(self)
+    }
+
+    /// Canonical text rendering of content chunks.
+    pub fn canonical_rendering(&self) -> String {
+        super::identity::canonical_rendering(self)
+    }
+
+    /// Truncated rendering after dropping whole tiers from the tail.
+    pub fn truncated_rendering(&self, drop_up_to: super::identity::TruncationTier) -> String {
+        super::identity::truncated_rendering(self, drop_up_to)
+    }
 }
 
 /// Compile a .faf YAML source string into .fafb v2 binary bytes.
@@ -167,6 +181,12 @@ pub fn compile(yaml_source: &str, options: &CompileOptions) -> Result<Vec<u8>, S
         let key_str = key
             .as_str()
             .ok_or_else(|| "YAML key must be a string".to_string())?;
+        if key_str.starts_with("__") {
+            return Err(format!(
+                "Unknown structural name '{}': writers emit only the closed structural list",
+                key_str
+            ));
+        }
         match canonical_chunk(key_str) {
             Some(chunk) => canonical_values.push((chunk, value.clone())),
             None => folded.push((key_str.to_string(), value.clone())),
@@ -575,6 +595,13 @@ another_custom:
     fn test_folding_into_scalar_context_is_an_error() {
         let yaml = "project:\n  name: x\ncontext: just a string\nweird_key: value\n";
         assert!(compile(yaml, &opts()).is_err());
+    }
+
+    #[test]
+    fn test_unknown_dunder_key_is_a_writer_error() {
+        let yaml = "faf_version: 2.5.0\nproject:\n  name: x\n__score__:\n  total: 1\n";
+        let err = compile(yaml, &opts()).unwrap_err();
+        assert!(err.contains("__score__"), "{err}");
     }
 
     // ─── Section names ───

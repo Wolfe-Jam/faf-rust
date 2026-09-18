@@ -10,7 +10,7 @@ context fast. Context, compiled.
 
 ```toml
 [dependencies]
-faf-fafb = "1.0"
+faf-fafb = "1.0.4"
 ```
 
 ## Quick start
@@ -34,9 +34,10 @@ access, classification bits (DNA / Context / Pointer), priority-based truncation
 CRC32 seal over the source.
 
 **Closed canonical.** The writer emits exactly the canonical chunk set in canonical order;
-non-canonical keys fold into the `context` chunk. Identical content compiles to **identical
-bytes** regardless of input key order — so a `.fafb` is content-addressable: the same project
-context, the same hash, everywhere. The reader keeps the IFF rule (skip unknown names), so a
+non-canonical keys fold into the `context` chunk. A `.fafb` has two identities: a **Content ID**
+over the stored content-chunk payloads (what the AI reads) and a **file digest** over every byte
+(what cards and signatures bind). A comment in the source, or a timestamp, changes the file
+digest and not the Content ID. The reader keeps the IFF rule (skip unknown names), so a
 future minor version can add a chunk without breaking deployed readers.
 
 **v2 only** — FAFb v1 is pre-release history and is rejected on read; re-compile from the
@@ -57,8 +58,8 @@ gets trapped in an old binary.
 
 ## Testing
 
-**103 WJTTC tests**, including the byte-exact golden-master seal — **236 tests pass across the
-FAF Rust workspace.**
+**WJTTC tests** including the byte-exact golden-master seal and the spec 2.0 lock
+(Content ID, prefix truncation, unknown-chunk passthrough). Run:
 
 ```bash
 cargo test -p faf-fafb

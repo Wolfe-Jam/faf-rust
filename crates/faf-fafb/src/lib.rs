@@ -7,11 +7,11 @@
 //!
 //! **Closed canonical.** The writer emits exactly the canonical chunk set
 //! (see [`canon`]), in canonical order; non-canonical top-level keys fold into
-//! the `context` chunk. Identical content produces byte-identical output
-//! regardless of input key order — so a `.fafb` is content-addressable: the
-//! same project context yields the same hash, everywhere. The reader keeps the
-//! IFF rule (skip unknown section names gracefully), so a future minor version
-//! can add a chunk without breaking deployed readers.
+//! the `context` chunk. The brick has two identities: a **Content ID** over
+//! stored content-chunk payloads, and a **file digest** over every byte.
+//! Stamps (timestamp, source CRC) do not enter the Content ID. The reader
+//! keeps the IFF rule (skip unknown section names gracefully), so a future
+//! minor version can add a chunk without breaking deployed readers.
 //!
 //! **v2 only.** FAFb v1 is pre-release history and is rejected on read
 //! (`IncompatibleVersion`) — re-compile from the `.faf` source, which is always
@@ -43,24 +43,29 @@ pub mod compile;
 pub mod error;
 pub mod flags;
 pub mod header;
+pub mod identity;
 pub mod priority;
 pub mod section;
 pub mod string_table;
 
 // Re-exports for convenience
 pub use canon::{
-    CANONICAL_CHUNKS, CLASSIFICATION_MASK, CanonicalChunk, ChunkClassification, canonical_chunk,
-    is_canonical,
+    CANONICAL_CHUNKS, CLASSIFICATION_MASK, CanonicalChunk, ChunkClassification, STRUCTURAL_CHUNKS,
+    canonical_chunk, is_canonical, is_known_structural, is_structural_name, is_valid_member_path,
 };
 pub use compile::{CompileOptions, DecompiledFafb, compile, decompile};
 pub use error::{FafbError, FafbResult};
 pub use flags::{
-    FLAG_COMPRESSED, FLAG_EMBEDDINGS, FLAG_MODEL_HINTS, FLAG_RESOLVED, FLAG_SIGNED,
-    FLAG_STRING_TABLE, FLAG_TOKENIZED, FLAG_WEIGHTED, Flags,
+    FLAG_COMPRESSED, FLAG_EMBEDDINGS, FLAG_MEMBERS, FLAG_MODEL_HINTS, FLAG_PROVENANCE,
+    FLAG_RESOLVED, FLAG_SIGNED, FLAG_STRING_TABLE, FLAG_TOKENIZED, FLAG_WEIGHTED, Flags,
 };
 pub use header::{
     FafbHeader, HEADER_SIZE, MAGIC, MAGIC_U32, MAX_FILE_SIZE, MAX_SECTIONS, VERSION_MAJOR,
-    VERSION_MINOR,
+    VERSION_MINOR, source_date_epoch,
+};
+pub use identity::{
+    TruncationTier, canonical_rendering, content_id, content_id_of, file_digest, hex_sha256,
+    truncated_rendering,
 };
 pub use priority::{
     PRIORITY_CRITICAL, PRIORITY_HIGH, PRIORITY_LOW, PRIORITY_MEDIUM, PRIORITY_OPTIONAL, Priority,

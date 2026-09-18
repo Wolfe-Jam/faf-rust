@@ -26,4 +26,5 @@ serde_yaml_ng = "0.10"
 wasm-bindgen-test = "0.3"
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ['-Oz', '-all']
+# wasm-opt -all emits stringref, which Node 20 rejects. Leave the rustc wasm.
+wasm-opt = false

@@ -29,12 +29,49 @@ pub fn sdk_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
-/// Score FAF YAML content with the Mk4 kernel (always-33) — returns JSON.
+/// Score FAF YAML content — 21-slot base (CLI default). Returns JSON.
 #[wasm_bindgen]
 pub fn score_faf(yaml: String) -> Result<String, JsValue> {
+    score_first_n(&yaml, 21).map_err(|e| JsValue::from_str(&e))
+}
+
+/// Score FAF YAML content — full 33-slot Mk4. Returns JSON.
+#[wasm_bindgen]
+pub fn score_faf_enterprise(yaml: String) -> Result<String, JsValue> {
     faf_kernel::score(&yaml)
         .map(|r| r.to_json())
         .map_err(|e| JsValue::from_str(&e))
+}
+
+fn score_first_n(yaml: &str, n: usize) -> Result<String, String> {
+    use faf_kernel::{Mk4Result, SlotState, score, tier_name};
+    let full = score(yaml)?;
+    let slots: Vec<(String, SlotState)> = full.slots.into_iter().take(n).collect();
+    let populated = slots
+        .iter()
+        .filter(|(_, s)| *s == SlotState::Populated)
+        .count() as u32;
+    let ignored = slots
+        .iter()
+        .filter(|(_, s)| *s == SlotState::Slotignored)
+        .count() as u32;
+    let total = n as u32;
+    let active = total - ignored;
+    let score_rounded = if active == 0 {
+        0
+    } else {
+        ((populated as f64 / active as f64) * 100.0).round() as u32
+    };
+    Ok(Mk4Result {
+        score: score_rounded,
+        tier: tier_name(score_rounded).to_string(),
+        populated,
+        ignored,
+        active,
+        total,
+        slots,
+    }
+    .to_json())
 }
 
 /// Validate FAF YAML content — true if it parses as a YAML mapping.
@@ -98,12 +135,14 @@ mod tests {
     }
 
     #[test]
-    fn test_score_faf_is_always_33() {
-        // v3: always-33 model — no Base/21. The score comes from faf-kernel.
+    fn test_score_faf_is_21_base() {
+        // CLI default: 21-slot base. Enterprise is score_faf_enterprise.
         let result = score_faf("project:\n  name: test".to_string()).unwrap();
         assert!(result.contains("\"score\":"));
         assert!(result.contains("\"tier\":"));
-        assert!(result.contains("\"total\":33"));
+        assert!(result.contains("\"total\":21"));
+        let ent = score_faf_enterprise("project:\n  name: test".to_string()).unwrap();
+        assert!(ent.contains("\"total\":33"));
     }
 
     #[test]

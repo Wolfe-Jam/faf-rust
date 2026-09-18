@@ -93,13 +93,13 @@ impl FafbHeader {
         }
     }
 
-    /// Create header with current timestamp
+    /// Create header with a timestamp.
+    ///
+    /// When `SOURCE_DATE_EPOCH` is set to a decimal Unix-seconds value, that
+    /// value is used. Otherwise wall-clock time.
     pub fn with_timestamp() -> Self {
         let mut header = Self::new();
-        header.created_timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs())
-            .unwrap_or(0);
+        header.created_timestamp = source_date_epoch().unwrap_or_else(wall_clock_secs);
         header
     }
 
@@ -232,6 +232,20 @@ impl FafbHeader {
     pub fn version_string(&self) -> String {
         format!("{}.{}", self.version_major, self.version_minor)
     }
+}
+
+/// Honour `SOURCE_DATE_EPOCH` when it is a valid `u64`. Spec MUST.
+pub fn source_date_epoch() -> Option<u64> {
+    std::env::var("SOURCE_DATE_EPOCH")
+        .ok()
+        .and_then(|v| v.parse::<u64>().ok())
+}
+
+fn wall_clock_secs() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0)
 }
 
 impl Default for FafbHeader {

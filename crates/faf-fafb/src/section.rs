@@ -226,28 +226,22 @@ impl SectionTable {
         sorted
     }
 
-    /// Get entries that fit within a token budget
+    /// Get entries that fit within a token budget by dropping whole priority
+    /// tiers from the tail (64, then 128, then 150–200). Original table order
+    /// is preserved. Critical (255) entries always remain.
+    ///
+    /// This is prefix truncation, not priority-first greedy: a hole in
+    /// canonical order is not a rendering of this Content ID.
     pub fn entries_within_budget(&self, budget: u16) -> Vec<&SectionEntry> {
-        // WHY: Priority-first traversal ensures highest-value sections get budget first
-        // This is a greedy algorithm - optimal for most use cases where priorities
-        // accurately reflect importance
-        let mut result = Vec::new();
-        let mut remaining = budget;
-
-        for entry in self.entries_by_priority() {
-            if entry.token_count <= remaining {
-                result.push(entry);
-                remaining -= entry.token_count;
-            } else if entry.priority.is_critical() {
-                // WHY: Critical sections always included - they define project identity
-                // (e.g., project name, version) and are small enough to never skip
-                result.push(entry);
+        let budget = budget as u32;
+        let mut keep: Vec<&SectionEntry> = self.entries.iter().collect();
+        for tier in [TierDrop::P64, TierDrop::P128, TierDrop::P150_200] {
+            if token_sum(&keep) <= budget {
+                break;
             }
-            // WHY: Non-critical sections that don't fit are silently dropped
-            // This enables graceful degradation under tight token budgets
+            keep.retain(|e| e.priority.is_critical() || !tier.matches(e.priority.value()));
         }
-
-        result
+        keep
     }
 
     /// Calculate total token count
@@ -321,6 +315,27 @@ impl<'a> IntoIterator for &'a SectionTable {
 
     fn into_iter(self) -> Self::IntoIter {
         self.entries.iter()
+    }
+}
+
+fn token_sum(entries: &[&SectionEntry]) -> u32 {
+    entries.iter().map(|e| e.token_count as u32).sum()
+}
+
+#[derive(Clone, Copy)]
+enum TierDrop {
+    P64,
+    P128,
+    P150_200,
+}
+
+impl TierDrop {
+    fn matches(self, priority: u8) -> bool {
+        match self {
+            Self::P64 => priority == 64,
+            Self::P128 => priority == 128,
+            Self::P150_200 => (150..=200).contains(&priority),
+        }
     }
 }
 
@@ -462,12 +477,43 @@ mod tests {
                 .with_token_count(500),
         );
 
-        // Budget of 200 should include critical (50) and high (100)
+        // Budget of 200: drop the 64-tier (500 tokens); critical + high remain.
         let within_budget = table.entries_within_budget(200);
         assert_eq!(within_budget.len(), 2);
 
         // The critical entry must always be included
         assert!(within_budget.iter().any(|e| e.name_index == 0));
+        // Original table order, not priority-sorted.
+        assert_eq!(within_budget[0].name_index, 0);
+        assert_eq!(within_budget[1].name_index, 1);
+    }
+
+    #[test]
+    fn test_budget_does_not_punch_holes() {
+        // Canonical-ish order: about(150), stack(200), architecture(128).
+        // Greedy-by-priority with budget 90 would keep stack+architecture and
+        // drop about — a hole. Tier-tail drops whole bands from the tail.
+        let mut table = SectionTable::new();
+        table.push(
+            SectionEntry::new(0, 0, 80)
+                .with_priority(Priority::new(150))
+                .with_token_count(80),
+        );
+        table.push(
+            SectionEntry::new(1, 0, 40)
+                .with_priority(Priority::high())
+                .with_token_count(40),
+        );
+        table.push(
+            SectionEntry::new(2, 0, 40)
+                .with_priority(Priority::medium())
+                .with_token_count(40),
+        );
+
+        let kept = table.entries_within_budget(90);
+        // Drop 128, still over; drop 150–200 → nothing left. Never stack
+        // without the earlier `about` row.
+        assert!(kept.is_empty());
     }
 
     #[test]

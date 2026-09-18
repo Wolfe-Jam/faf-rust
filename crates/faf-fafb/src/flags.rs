@@ -27,7 +27,13 @@ pub const FLAG_STRING_TABLE: u16 = 0b0000_0000_0100_0000;
 /// File is output of chain resolution (enterprise)
 pub const FLAG_RESOLVED: u16 = 0b0000_0000_1000_0000;
 
-// Reserved: bits 8-15 for future use
+/// Carries `__provenance__` (spec 2.0 structural; this crate does not write it)
+pub const FLAG_PROVENANCE: u16 = 0b0000_0001_0000_0000;
+
+/// Carries `__members__` (spec 2.0 structural; this crate does not write it)
+pub const FLAG_MEMBERS: u16 = 0b0000_0010_0000_0000;
+
+// Unassigned: bits 10-15
 
 /// Helper struct for working with flags
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -188,6 +194,8 @@ mod tests {
         assert_eq!(FLAG_SIGNED, 32);
         assert_eq!(FLAG_STRING_TABLE, 64);
         assert_eq!(FLAG_RESOLVED, 128);
+        assert_eq!(FLAG_PROVENANCE, 256);
+        assert_eq!(FLAG_MEMBERS, 512);
     }
 
     #[test]
