@@ -3,7 +3,7 @@
 **Format version:** 2.0 (`version_major = 2`)
 **Crate:** `faf-fafb` 1.0.4
 **Status:** Implementation complete; reference implementation IS this crate.
-**Media type:** `application/vnd.fafb` — **deliberately unregistered** (see [Registration](#registration)).
+**Media type:** `application/vnd.fafb`
 
 > **Version axes — say it once, then stop.** Three different numbers travel together and must not be conflated:
 > - **FAF spec** `v3.3.0` — the `.faf` format ("the 33"), IFF-influenced chunk model.
@@ -371,14 +371,6 @@ These siblings share the magic and are **not this format**: FAFb CLI 0.9 (v1, `r
 All multi-byte integers are little-endian. Bounds are validated on decompile:
 magic, version, total-size match, and per-entry `offset + length` (checked add,
 no overflow) within `total_size`.
-
----
-
-## Registration
-
-The `.faf` YAML format is IANA-registered (`application/vnd.faf+yaml`). FAFb’s `application/vnd.fafb` media type is deliberately left unregistered. Do not file it. Card `type` fields MAY use `application/vnd.fafb` as a type string. The registration decision sits with the project owner.
-
-Do not switch to `application/x.vnd.fafb` unless a catalog refuses the current string.
 
 ---
 

@@ -1703,11 +1703,6 @@ Use .fafb corpus for model training:
 - `application/vnd.faf+yaml` registered October 2025
 - Establishes FAF as legitimate format
 
-### Future Registrations
-
-- `application/vnd.fafb` for binary format
-- Or `application/vnd.fafb`
-
 ### W3C / ECMA Consideration
 
 If adoption grows:

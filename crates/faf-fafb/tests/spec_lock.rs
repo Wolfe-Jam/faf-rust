@@ -1,4 +1,4 @@
-//! Spec 2.0 lock tests — REVIEW-RESPONSE.md R1–R9, no frozen-wire change.
+//! Spec 2.0 lock tests — REVIEW-RESPONSE.md R1–R8, no frozen-wire change.
 
 use faf_fafb::canon::ChunkClassification;
 use faf_fafb::header::HEADER_SIZE;
@@ -349,12 +349,11 @@ fn r8_v1_is_incompatible_version() {
     ));
 }
 
-// ─── R9 ───
-
 #[test]
-fn r9_spec_says_do_not_file() {
+fn spec_does_not_discuss_fafb_iana() {
     let spec = include_str!("../BINARY-FORMAT.md");
-    assert!(spec.contains("deliberately left unregistered"));
-    assert!(spec.contains("Do not file it"));
     assert!(!spec.contains("IANA: Pending"));
+    assert!(!spec.contains("deliberately left unregistered"));
+    assert!(!spec.contains("Do not file it"));
+    assert!(!spec.contains("## Registration"));
 }
