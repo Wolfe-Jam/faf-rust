@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.5 — 2026-09-20
+
+**Spec 2.0 docs: Registration section dropped. No wire change.**
+
+- `BINARY-FORMAT.md` no longer has a Registration section. Wire v2 is unchanged (golden master frozen).
+
 ## 1.0.4 — 2026-09-17
 
 - Spec 2.0 lock (no frozen-wire byte change). Flag table corrected to match the golden master: bit 6 is `STRING_TABLE`, bit 7 is `RESOLVED`.

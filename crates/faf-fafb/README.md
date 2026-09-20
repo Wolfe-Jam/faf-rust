@@ -10,7 +10,7 @@ context fast. Context, compiled.
 
 ```toml
 [dependencies]
-faf-fafb = "1.0.4"
+faf-fafb = "1.0.5"
 ```
 
 ## Quick start
