@@ -1,7 +1,7 @@
 [package]
 name = "faf-rust-sdk"
-version = "3.1.0"
-description = "Persistent Project Context for Rust. IANA-registered .faf format — the facade over faf-kernel (parse/validate/score) + faf-fafb (binary v2)."
+version = "3.1.1"
+description = "Persistent Project Context for Rust. The IANA-registered .faf format: faf-kernel (parse/validate/score) and faf-fafb (FAFb v2 binary) behind one import."
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -18,8 +18,8 @@ default = []
 axum = ["dep:axum", "dep:tower", "dep:http"]
 
 [dependencies]
-faf-kernel = { version = "1.0", path = "../faf-kernel" }
-faf-fafb = { version = "1.0", path = "../faf-fafb" }
+faf-kernel = { version = "1.1", path = "../faf-kernel" }
+faf-fafb = { version = "1.0.5", path = "../faf-fafb" }
 axum = { version = "0.8", optional = true }
 tower = { version = "0.5", optional = true }
 http = { version = "1.0", optional = true }

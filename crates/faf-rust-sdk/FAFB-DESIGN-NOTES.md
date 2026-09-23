@@ -1,7 +1,8 @@
 # .fafb Design Notes & Future Directions
 
-> **Canonical spec:** [xai-faf-rust/BINARY-FORMAT.md](https://github.com/Wolfe-Jam/xai-faf-rust/blob/main/BINARY-FORMAT.md)
-> **IANA MIME type:** `application/vnd.fafb`
+> **Canonical spec:** [faf-fafb/BINARY-FORMAT.md](https://github.com/Wolfe-Jam/faf-rust/blob/main/crates/faf-fafb/BINARY-FORMAT.md) — wire v2
+> **Media type string:** `application/vnd.fafb`
+> `.faf`, the source format, is IANA-registered as `application/vnd.faf+yaml`.
 
 This document contains early design ideas and future directions from the original
 November 2025 research phase. The canonical FAFb v1.0 specification lives in
@@ -42,7 +43,7 @@ AI loads .fafb (optimized)
 ## File Extension
 
 - **Primary**: `.fafb` (FAF Binary)
-- **MIME type**: `application/vnd.fafb` (future IANA registration)
+- **MIME type**: `application/vnd.fafb`
 
 ---
 
@@ -1824,7 +1825,7 @@ This is infrastructure. Infrastructure takes time.
 ```
 Magic: 0x46 0x41 0x46 0x42 ("FAFB")
 Extension: .fafb
-MIME (proposed): application/vnd.fafb
+MIME: application/vnd.fafb
 ```
 
 ## Minimum Valid .fafb

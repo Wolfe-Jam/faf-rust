@@ -1,4 +1,4 @@
-//! FAF Rust SDK — the facade over the FAF kernel.
+//! FAF Rust SDK — the whole Rust FAF surface behind one import.
 //!
 //! `faf-rust-sdk` re-exports two crates so downstream code has one dependency
 //! for the whole Rust FAF surface:

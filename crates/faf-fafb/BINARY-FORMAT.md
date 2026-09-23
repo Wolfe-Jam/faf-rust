@@ -374,7 +374,7 @@ A reader MUST reject any file whose `version_major` is not 2 with `IncompatibleV
 
 A new layout MUST NOT reuse the magic `FAFB` without a `version_major` this reader will refuse.
 
-These siblings share the magic and are **not this format**: FAFb CLI 0.9 (v1, `reserved` at byte 26); the Zig header (`u16 version`, `string_table_offset` + `string_table_size`); the skill-seal proof (`FAFB` + CRC32 + JSON, no version byte — about 1 in 256 passes the version check and then fails bounds). They MUST change magic or sit on a `version_major` other than 2.
+These siblings share the magic and are **not this format**: pre-release v1 ROMs (`reserved` at byte 26 — the FAFb CLI wrote these until 0.9.5, which now compiles v2 through this crate); the Zig header (`u16 version`, `string_table_offset` + `string_table_size`); the skill-seal proof (`FAFB` + CRC32 + JSON, no version byte — about 1 in 256 passes the version check and then fails bounds). They MUST change magic or sit on a `version_major` other than 2.
 
 - **Minor versions** may add chunks to the canonical table or flag bits.
   Because the reader skips unknown section names and ignores unknown flag bits,

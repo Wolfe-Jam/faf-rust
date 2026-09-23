@@ -129,12 +129,13 @@ async fn handler(faf: FafContext) -> String {
 ## Testing
 
 faf-rust-sdk's own suite is **58 WJTTC tests** — 16 Brake (safety), 22 Engine (core),
-20 Aero (edge). And because it's a thin facade, every API it exposes is already covered
-by the crates beneath it — faf-kernel (58) and faf-fafb (100). **216 tests pass across
-the three crates.**
+20 Aero (edge). The crates it re-exports carry their own: faf-kernel 58, faf-fafb 125 —
+the latter including a byte-exact golden master and a spec lock that pins the FAFb v2
+wire to the written specification. **241 tests across the three crates**, plus 11
+doc-tests.
 
 ```bash
-cargo test -p faf-rust-sdk -p faf-kernel -p faf-fafb   # 216 passing
+cargo test -p faf-rust-sdk -p faf-kernel -p faf-fafb   # 241 + 11 doc-tests
 ```
 
 ## Part of the FAF Rust workspace

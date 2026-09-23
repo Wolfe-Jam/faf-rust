@@ -4,6 +4,26 @@ All notable changes to faf-rust-sdk will be documented in this file.
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-09-23
+
+Documentation and resolution. No API change, no logic change.
+
+### Fixed
+- `FAFB-DESIGN-NOTES.md` shipped in the 3.1.0 tarball pointing its "Canonical spec"
+  at a repository that no longer exists, and stating an IANA media type for `.fafb`.
+  It now points at [`faf-fafb/BINARY-FORMAT.md`](https://github.com/Wolfe-Jam/faf-rust/blob/main/crates/faf-fafb/BINARY-FORMAT.md)
+  (wire v2). The IANA registration is `.faf`'s — `application/vnd.faf+yaml`; the
+  compiled binary form builds on it.
+- Test counts in the README restamped from a green run: faf-fafb is 125, not 100,
+  so the three-crate total is 241 (plus 11 doc-tests), not 216.
+
+### Changed
+- Dependency floors raised so a resolved build matches what this crate documents:
+  `faf-kernel` 1.0 → **1.1** (the AGENTS.md-ready fields this SDK advertises landed
+  there), and `faf-fafb` 1.0 → **1.0.5** (`binary::content_id` and `binary::file_digest`
+  do not exist before it).
+- Crate description and the `lib.rs` header reworded.
+
 ## [3.1.0] - 2026-08-25
 
 ### Changed
