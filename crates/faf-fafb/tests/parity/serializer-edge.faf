@@ -1,0 +1,82 @@
+faf_version: "2.5.0"
+project:
+  name: faf-rust
+  looks_bool: "yes"
+  looks_off: "off"
+  looks_null: "null"
+  looks_int: "007"
+  looks_float: "1.0"
+  looks_date: "2026-09-21"
+  looks_version: "v2.0"
+  real_int: 42
+  real_float: 1.5
+  real_bool: true
+  real_null: null
+  empty_string: ""
+  colon_in_value: "key: value"
+  hash_in_value: "release #2 — not a comment"
+  dash_in_value: "- leading dash"
+  brace_in_value: "{ not: a map }"
+  bracket_in_value: "[not, a, list]"
+  star_in_value: "*not-an-alias"
+  amp_in_value: "&not-an-anchor"
+  percent_in_value: "%not-a-directive"
+  at_in_value: "@reserved"
+  backtick_in_value: "`reserved"
+  quote_in_value: 'he said "go"'
+  apostrophe_in_value: "it's fine"
+  backslash_in_value: "C:\\path\\to\\file"
+  tab_in_value: "a\tb"
+  newline_in_value: "line one\nline two"
+  leading_space: "  padded left"
+  trailing_space: "padded right  "
+  unicode: "日本語 café — em dash"
+  emoji: "🏎️ ✪ 🍊"
+  very_long_line: "A single scalar long enough to tempt a serializer into wrapping it across lines, which would move payload bytes without changing meaning."
+app_type: cli
+about: |
+  A literal block scalar.
+  Second line, kept as written.
+
+  Blank line above.
+stack:
+  build: cargo
+  "yes": quoted-key-that-looks-bool
+  "3": quoted-key-that-looks-int
+  empty_map: {}
+  empty_list: []
+human_context:
+  who: Rust devs
+  what: serializer-drift fixture
+  why: pin the payload bytes the Content ID is computed over
+tech_stack:
+  - Rust
+  - "1.0"
+  - "- dashy"
+  - ""
+  - "  spaced  "
+key_files:
+  - Cargo.toml
+  - "path with spaces.toml"
+  - "тест.rs"
+commands:
+  test: cargo test
+  weird: "echo 'hi' && echo \"bye\" # inside a string"
+monorepo:
+  packages_count: 3
+  nested:
+    deep:
+      deeper: "four levels down"
+architecture: >
+  A folded scalar that runs
+  across several source lines
+  and folds into one.
+scores:
+  total: 87
+  slots: 33
+context:
+  note: author-written context entry
+custom_tool_key:
+  anything: 1
+aaa_first_fold: "sorts before custom_tool_key"
+zzz_last_fold: "sorts after custom_tool_key"

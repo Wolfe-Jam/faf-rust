@@ -37,6 +37,26 @@ fn det() -> faf_fafb::CompileOptions {
 /// Pinned after 1.0.4 identity landing. Changing this is a Content ID break.
 const GOLDEN_CONTENT_ID: &str = "3bc83e7a3fae87a55d2a71fcb787c09dbe4071770876467f35dabc04948b4a26";
 
+fn edge_input() -> String {
+    fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/parity/serializer-edge.faf"
+    ))
+    .unwrap()
+}
+
+fn edge_bytes() -> Vec<u8> {
+    fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/parity/serializer-edge.fafb"
+    ))
+    .unwrap()
+}
+
+/// Pinned 2026-09-21 with `serde_yaml_ng = "=0.10.0"`. Moves only with a
+/// deliberate, announced Content ID break.
+const EDGE_CONTENT_ID: &str = "63ea6d8a4b255afc7d939cff67a05e190dbe4f68772196731f861e7e76a80095";
+
 fn assemble(
     sections: Vec<(String, ChunkClassification, Priority, Vec<u8>)>,
     source_checksum: u32,
@@ -177,6 +197,89 @@ fn r2_comment_only_source_changes_file_digest_not_content_id() {
     assert_ne!(file_digest(&ba), file_digest(&bb));
     // CRC lives at header bytes 8..12 — that is the 4-byte stamp.
     assert_ne!(&ba[8..12], &bb[8..12]);
+}
+
+/// R2 writer MUST: "the reference compiler MUST NOT change any payload byte it
+/// emits for a given `.faf`; a serializer change that does so is a Content ID
+/// break." The golden master is plain scalars, so it cannot see that break —
+/// this fixture carries the cases a YAML serializer upgrade actually moves:
+/// bool-like and number-like strings, block and folded scalars, embedded
+/// colons, hashes, quotes, tabs, newlines, unicode, empty collections, quoted
+/// keys, deep nesting and a line long enough to tempt wrapping.
+///
+/// If this fails after a dependency bump, the bump is the break. Re-pin only on
+/// purpose, and only with a Content ID break announced.
+#[test]
+fn r2_serializer_edge_payload_bytes_are_pinned() {
+    let bytes = compile(&edge_input(), &det()).unwrap();
+    assert_eq!(
+        bytes,
+        edge_bytes(),
+        "payload bytes moved — serializer drift is a Content ID break (R2)"
+    );
+    assert_eq!(content_id(&bytes).unwrap(), EDGE_CONTENT_ID);
+}
+
+// ─── payload contract (BINARY-FORMAT.md § Payload) ───
+
+/// A payload is `name:\n` + a YAML document holding the value, serialized at
+/// column 0. Drop the first line and the remainder round-trips to the value the
+/// `.faf` carried. This pins the rule readers are told to follow.
+#[test]
+fn payload_value_round_trips_after_dropping_the_header_line() {
+    for source in [golden_input(), edge_input()] {
+        let bytes = compile(&source, &det()).unwrap();
+        let decoded = decompile(&bytes).unwrap();
+        let src: serde_yaml_ng::Value = serde_yaml_ng::from_str(&source).unwrap();
+        let src_map = src.as_mapping().unwrap();
+
+        for chunk in faf_fafb::CANONICAL_CHUNKS {
+            let Some(payload) = decoded.get_section_string_by_name(chunk.name) else {
+                continue;
+            };
+            let (head, rest) = payload.split_once('\n').expect("payload has a header line");
+            assert_eq!(head, format!("{}:", chunk.name), "payload header line");
+
+            let parsed: serde_yaml_ng::Value = serde_yaml_ng::from_str(rest)
+                .unwrap_or_else(|e| panic!("{} payload is not a YAML document: {e}", chunk.name));
+
+            // `context` also carries the folded non-canonical keys, so it is the
+            // one chunk that is not the source value as written.
+            if chunk.name != "context" {
+                let key = serde_yaml_ng::Value::String(chunk.name.to_string());
+                assert_eq!(
+                    Some(&parsed),
+                    src_map.get(&key),
+                    "{} does not round-trip",
+                    chunk.name
+                );
+            }
+        }
+    }
+}
+
+/// The other half of the same contract: the payload as a whole is NOT a YAML
+/// document. If this ever passes, the payload shape changed and § Payload is
+/// wrong — which is a Content ID break, not a doc edit.
+#[test]
+fn whole_payload_is_not_a_yaml_document() {
+    let bytes = compile(&golden_input(), &det()).unwrap();
+    let decoded = decompile(&bytes).unwrap();
+
+    let scalar = decoded.get_section_string_by_name("faf_version").unwrap();
+    assert!(
+        serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&scalar).is_err(),
+        "a scalar chunk payload must not parse whole"
+    );
+
+    let mapping = decoded.get_section_string_by_name("project").unwrap();
+    let flat: serde_yaml_ng::Value = serde_yaml_ng::from_str(&mapping).unwrap();
+    let key = serde_yaml_ng::Value::String("project".to_string());
+    assert_eq!(
+        flat.as_mapping().unwrap().get(&key),
+        Some(&serde_yaml_ng::Value::Null),
+        "parsed whole, a mapping chunk binds its own name to null"
+    );
 }
 
 // ─── R3 / R4 ───

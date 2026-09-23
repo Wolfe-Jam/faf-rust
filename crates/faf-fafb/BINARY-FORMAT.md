@@ -147,6 +147,28 @@ It is not a model token count. Measured under-count on YAML is about 10–20%.
 Real counts MUST live in `__tokens__` (see [Structural chunks](#structural-chunks)).
 Do not overwrite this `u16`.
 
+### Payload
+
+A content chunk's payload is the chunk name, a colon and a newline, followed by
+a YAML document holding that chunk's value. The value is serialized at column 0,
+**not** indented under the name, so a payload is not a one-key YAML mapping.
+
+A reader that wants the value **drops the first line and parses the remainder**.
+That remainder is a complete YAML document and round-trips to the value the
+`.faf` carried, nesting intact. Parsing a payload whole, or parsing a
+concatenation of payloads, is out of contract: a scalar chunk
+(`faf_version:` then `2.5.0`) is a YAML scanning error, and a mapping chunk
+parses flat, with the chunk name bound to null.
+
+Payloads use the **YAML 1.2 core schema** — the schema the reference compiler
+writes. `yes`, `no`, `on` and `off` are plain strings there, and a string with
+one of those values is emitted unquoted. A reader MUST parse payloads as
+YAML 1.2. A YAML 1.1 parser (PyYAML, for one) reads those four as booleans and
+will not round-trip the source value.
+
+Receipt: `tests/parity/serializer-edge.faf` carries the quoting cases a
+serializer moves; `tests/spec_lock.rs` pins both the bytes and this round-trip.
+
 ### String table
 
 A length-prefixed list of section names (max 256 entries, each ≤ 255 bytes),
@@ -323,7 +345,7 @@ This crate’s `compile()` emits `__string_table__` only. It does not write `__t
 
 ## Rendering and truncation
 
-There is one canonical text rendering per Content ID. Render order is canonical table order. The stored payload stays YAML (the bytes already on the wire). The rendering is the concatenation of content-chunk payloads in that order; each payload already begins with `name:\n`.
+There is one canonical text rendering per Content ID. Render order is canonical table order. The stored payload stays YAML (the bytes already on the wire). The rendering is the concatenation of content-chunk payloads in that order; each payload already begins with `name:\n`. The rendering is text for a model, not a YAML document — see [Payload](#payload).
 
 Every truncated rendering of a `.fafb` MUST be a prefix of its full canonical rendering. Chunks are removed only from the tail, whole priority tiers at a time, in this order: 64, then 128, then 150–200. Critical (255) chunks always remain. A reader MUST NOT produce a rendering that selects chunks by priority out of canonical order; a section set that is not a canonical prefix is not a rendering of this Content ID.
 

@@ -14,7 +14,12 @@ categories = ["encoding", "development-tools"]
 readme = "README.md"
 
 [dependencies]
-serde_yaml_ng = "0.10"
+# Exact pin, not a caret: the payload bytes this crate emits ARE the Content ID
+# (BINARY-FORMAT.md § Identities — "the reference compiler MUST NOT change any
+# payload byte it emits for a given .faf"). A patch bump that re-quotes one
+# scalar silently breaks every published Content ID, so the version moves only
+# with tests/parity/serializer-edge.fafb re-pinned on purpose.
+serde_yaml_ng = "=0.10.0"
 thiserror = "1.0"
 byteorder = "1.5"
 crc32fast = "1.3"
