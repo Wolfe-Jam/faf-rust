@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+**The serializer is pinned and the payload contract is written down. No wire change.**
+
+- `serde_yaml_ng` pinned to `=0.10.0`. The payload bytes this crate emits *are* the
+  Content ID, so a caret range let a dependent's resolution move them and break every
+  published ID with no spec change.
+- `BINARY-FORMAT.md` § Payload, new: a payload is `name:\n` + the value serialized at
+  column 0, so it is not a one-key mapping. Readers drop the first line and parse the
+  remainder, which round-trips with nesting intact. Payloads are YAML 1.2 core — `yes`,
+  `no`, `on` and `off` are strings, emitted unquoted; a YAML 1.1 parser reads them as
+  booleans.
+- `tests/parity/serializer-edge.faf` + `.fafb`: a second golden carrying the quoting
+  cases a serializer upgrade actually moves (bool-like and number-like strings, block
+  and folded scalars, embedded colons, quotes, tabs, newlines, unicode, deep nesting).
+  Byte-pinned, Content ID `63ea6d8a…`.
+- Three tests: the edge-fixture byte pin, the payload round-trip, and the negative half
+  (a whole payload is not a YAML document).
+- The sibling list no longer says the FAFb CLI writes v1 ROMs — it compiles wire v2
+  through this crate as of 0.9.5.
+
 ## 1.0.5 — 2026-09-20
 
 **Spec 2.0 docs: Registration section dropped. No wire change.**

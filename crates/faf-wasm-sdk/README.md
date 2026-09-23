@@ -46,7 +46,7 @@ One kernel, many shells:
 
 - [`faf-kernel`](https://crates.io/crates/faf-kernel) — parse, validate, score (the engine)
 - [`faf-fafb`](https://crates.io/crates/faf-fafb) — the FAFb v2 binary format
-- [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) — the high-level SDK facade (native)
+- [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) — the high-level SDK, native (kernel + fafb behind one import)
 
 ## Links
 

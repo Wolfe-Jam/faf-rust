@@ -63,7 +63,7 @@ cargo test -p faf-kernel
 One kernel, many shells:
 
 - [`faf-fafb`](https://crates.io/crates/faf-fafb) — the FAFb v2 binary format (the compiled brick)
-- [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) — the high-level SDK facade (kernel + fafb + Axum)
+- [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) — the high-level SDK (kernel + fafb + Axum behind one import)
 - [`faf-wasm-sdk`](https://crates.io/crates/faf-wasm-sdk) — the same engine for the browser and edge (WASM)
 
 ## Links

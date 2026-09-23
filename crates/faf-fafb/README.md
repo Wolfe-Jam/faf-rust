@@ -70,7 +70,7 @@ cargo test -p faf-fafb
 One kernel, many shells:
 
 - [`faf-kernel`](https://crates.io/crates/faf-kernel) — parse, validate, score (the engine)
-- [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) — the high-level SDK facade
+- [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) — the high-level SDK: kernel + fafb behind one import
 - [`faf-wasm-sdk`](https://crates.io/crates/faf-wasm-sdk) — the same engine for the browser and edge (WASM)
 
 ## Links

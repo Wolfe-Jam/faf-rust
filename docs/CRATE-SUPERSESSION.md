@@ -14,8 +14,8 @@ FAF family names on [crates.io](https://crates.io) are held by the format owner 
 | crates.io | Version (live) | Role | Path in this repo |
 |-----------|----------------|------|-------------------|
 | [`faf-kernel`](https://crates.io/crates/faf-kernel) | 1.0.x | Parse, validate, Mk4 score | `crates/faf-kernel` |
-| [`faf-fafb`](https://crates.io/crates/faf-fafb) | 1.0.x | FAFb binary brick | `crates/faf-fafb` |
-| [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) | **3.x** | Thin facade → kernel + fafb | `crates/faf-rust-sdk` |
+| [`faf-fafb`](https://crates.io/crates/faf-fafb) | 1.0.x | FAFb wire v2 binary format | `crates/faf-fafb` |
+| [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk) | **3.x** | Kernel + fafb behind one import | `crates/faf-rust-sdk` |
 | [`faf-wasm-sdk`](https://crates.io/crates/faf-wasm-sdk) | **3.x** | WASM shell → kernel + fafb | `crates/faf-wasm-sdk` |
 
 ```toml
@@ -71,7 +71,7 @@ If a name has only an early `0.1.0` and no active product line, treat it as **re
 ## 5. How to publish (maintainers)
 
 1. Work only in **this** workspace for foundation crates.  
-2. Order when needed: `faf-kernel` → `faf-fafb` → facades (`faf-rust-sdk`, `faf-wasm-sdk`).  
+2. Order when needed: `faf-kernel` → `faf-fafb` → the shells (`faf-rust-sdk`, `faf-wasm-sdk`).  
 3. Product crates (`rust-faf-mcp`, `mcp-better`, …) publish from **their** repos.  
 4. After any rename or major, update **this file** in the same PR.
 
