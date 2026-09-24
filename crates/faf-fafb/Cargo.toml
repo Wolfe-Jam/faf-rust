@@ -1,6 +1,6 @@
 [package]
 name = "faf-fafb"
-version = "1.0.5"
+version = "1.0.6"
 description = "FAFb v2 — the compiled binary form of .faf. Closed-canonical IFF-style chunks: 13 content chunks, Content ID + file digest. The brick."
 edition.workspace = true
 rust-version.workspace = true

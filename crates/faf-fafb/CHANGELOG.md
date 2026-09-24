@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.6 — 2026-09-23
 
 **The serializer is pinned and the payload contract is written down. No wire change.**
 

@@ -1,14 +1,14 @@
 # FAFb Binary Format — v2 Specification
 
 **Format version:** 2.0 (`version_major = 2`)
-**Crate:** `faf-fafb` 1.0.5
+**Crate:** `faf-fafb` 1.0.6
 **Status:** Implementation complete; reference implementation IS this crate.
 **Media type:** `application/vnd.fafb`
 
 > **Version axes — say it once, then stop.** Three different numbers travel together and must not be conflated:
 > - **FAF spec** `v3.3.0` — the `.faf` format ("the 33"), IFF-influenced chunk model.
 > - **FAFb wire** `version_major = 2` — this binary container format.
-> - **Crate semver** `faf-fafb 1.0.5` — the Rust package version.
+> - **Crate semver** `faf-fafb 1.0.6` — the Rust package version.
 >
 > In one sentence: **faf-fafb wire v2 implements FAF-33 (spec 3.3.0).** That sentence is the whole mapping; everything below is wire v2.
 >
