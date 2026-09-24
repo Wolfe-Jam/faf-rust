@@ -12,7 +12,7 @@ Full name map (live · superseded · reserved): **[docs/CRATE-SUPERSESSION.md](d
 | Crate | crates.io | What |
 |-------|-----------|------|
 | [`faf-kernel`](crates/faf-kernel) | [faf-kernel](https://crates.io/crates/faf-kernel) | Parse, validate, Mk4 score |
-| [`faf-fafb`](crates/faf-fafb) | [faf-fafb](https://crates.io/crates/faf-fafb) | FAFb wire v2 — the compiled binary form of `.faf` |
+| [`faf-fafb`](crates/faf-fafb) | [faf-fafb](https://crates.io/crates/faf-fafb) | FAFb wire v2 — the compiled binary form of `.faf` ([the tour](https://faf.one/bricks)) |
 | [`faf-rust-sdk`](crates/faf-rust-sdk) | [faf-rust-sdk](https://crates.io/crates/faf-rust-sdk) **3.x** | Kernel + fafb behind one import |
 | [`faf-wasm-sdk`](crates/faf-wasm-sdk) | [faf-wasm-sdk](https://crates.io/crates/faf-wasm-sdk) **3.x** | WASM shell → kernel + fafb |
 

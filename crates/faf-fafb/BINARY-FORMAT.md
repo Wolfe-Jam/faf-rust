@@ -4,6 +4,7 @@
 **Crate:** `faf-fafb` 1.0.6
 **Status:** Implementation complete; reference implementation IS this crate.
 **Media type:** `application/vnd.fafb`
+**Human tour:** [faf.one/bricks](https://faf.one/bricks) — the first 32 bytes, annotated.
 
 > **Version axes — say it once, then stop.** Three different numbers travel together and must not be conflated:
 > - **FAF spec** `v3.3.0` — the `.faf` format ("the 33"), IFF-influenced chunk model.

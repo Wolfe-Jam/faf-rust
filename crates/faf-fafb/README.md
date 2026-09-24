@@ -6,6 +6,10 @@
 compiled output — a small, sealed binary with a checksum, for shipping or caching project
 context fast. Context, compiled.
 
+New to the format? **[Anatomy of a Brick](https://faf.one/bricks)** walks through the first
+32 bytes and what surprises people — why there is no chunk 14, why a comment changes the
+file but not the context, and why it is not a compressor.
+
 ## Install
 
 ```toml
