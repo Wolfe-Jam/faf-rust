@@ -1,0 +1,92 @@
+faf_version: 3.3.0
+project:
+  name: faf-scoring-kernel
+  goal: WASM scoring + FAFb v2 compile for Node and Bun
+  main_language: Rust
+  type: library
+stack:
+  frontend: slotignored
+  css_framework: slotignored
+  ui_library: slotignored
+  state_management: slotignored
+  backend: slotignored
+  api_type: slotignored
+  runtime: Node.js
+  database: slotignored
+  connection: slotignored
+  hosting: npm
+  build: wasm-pack
+  cicd: GitHub Actions
+  monorepo_tool: slotignored
+  package_manager: npm
+  workspaces: slotignored
+  admin: slotignored
+  cache: slotignored
+  search: slotignored
+  storage: slotignored
+human_context:
+  who: Node and Bun developers embedding FAF scoring
+  what: WASM kernel that scores .faf always-33 and compiles .fafb v2
+  why: One engine, one number — always-33 in every FAF app
+  where: npm faf-scoring-kernel, vendored in faf-cli
+  when: 3.0.0 Always33 Edition, 2026-09-25
+  how: npm install faf-scoring-kernel
+monorepo:
+  packages_count: slotignored
+  build_orchestrator: slotignored
+  versioning_strategy: slotignored
+  shared_configs: slotignored
+  remote_cache: slotignored
+tech_stack:
+  - Rust
+  - WebAssembly
+  - wasm-bindgen
+key_files:
+  - faf_wasm_sdk.js
+  - faf_wasm_sdk_bg.wasm
+  - package.json
+commands:
+  install: npm install faf-scoring-kernel
+  score: node -e "require('faf-scoring-kernel').score_faf(yaml)"
+  compile: node -e "require('faf-scoring-kernel').compile_fafb(yaml)"
+architecture:
+  pattern: wasm-bindgen shell over faf-kernel + faf-fafb
+  description: Generated Node target from faf-rust crates/faf-wasm-sdk 3.1.0 (npm/faf-scoring-kernel/build.sh)
+quality:
+  testing: faf-rust cargo test + always-33 parity
+  linting: slotignored
+  ci: GitHub Actions
+ai:
+  context_file: slotignored
+  memory_file: slotignored
+  instructions_file: slotignored
+preferences:
+  convention: slotignored
+  style: slotignored
+  documentation: README.md
+slotignored:
+  - stack.frontend
+  - stack.css_framework
+  - stack.ui_library
+  - stack.state_management
+  - stack.backend
+  - stack.api_type
+  - stack.database
+  - stack.connection
+  - stack.monorepo_tool
+  - stack.workspaces
+  - stack.admin
+  - stack.cache
+  - stack.search
+  - stack.storage
+  - monorepo.packages_count
+  - monorepo.build_orchestrator
+  - monorepo.versioning_strategy
+  - monorepo.shared_configs
+  - monorepo.remote_cache
+  - quality.linting
+  - ai.context_file
+  - ai.memory_file
+  - ai.instructions_file
+  - preferences.convention
+  - preferences.style
