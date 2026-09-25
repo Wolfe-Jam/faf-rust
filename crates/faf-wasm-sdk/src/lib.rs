@@ -29,49 +29,21 @@ pub fn sdk_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
-/// Score FAF YAML content — 21-slot base (CLI default). Returns JSON.
+/// Score FAF YAML content with the Mk4 kernel (always-33) — returns JSON.
+///
+/// Always 33 slots. A 21-slot file carries the 12 enterprise slots as
+/// `slotignored`, so it scores the same here as in every other FAF app.
 #[wasm_bindgen]
 pub fn score_faf(yaml: String) -> Result<String, JsValue> {
-    score_first_n(&yaml, 21).map_err(|e| JsValue::from_str(&e))
-}
-
-/// Score FAF YAML content — full 33-slot Mk4. Returns JSON.
-#[wasm_bindgen]
-pub fn score_faf_enterprise(yaml: String) -> Result<String, JsValue> {
     faf_kernel::score(&yaml)
         .map(|r| r.to_json())
         .map_err(|e| JsValue::from_str(&e))
 }
 
-fn score_first_n(yaml: &str, n: usize) -> Result<String, String> {
-    use faf_kernel::{Mk4Result, SlotState, score, tier_name};
-    let full = score(yaml)?;
-    let slots: Vec<(String, SlotState)> = full.slots.into_iter().take(n).collect();
-    let populated = slots
-        .iter()
-        .filter(|(_, s)| *s == SlotState::Populated)
-        .count() as u32;
-    let ignored = slots
-        .iter()
-        .filter(|(_, s)| *s == SlotState::Slotignored)
-        .count() as u32;
-    let total = n as u32;
-    let active = total - ignored;
-    let score_rounded = if active == 0 {
-        0
-    } else {
-        ((populated as f64 / active as f64) * 100.0).round() as u32
-    };
-    Ok(Mk4Result {
-        score: score_rounded,
-        tier: tier_name(score_rounded).to_string(),
-        populated,
-        ignored,
-        active,
-        total,
-        slots,
-    }
-    .to_json())
+/// Same as [`score_faf`] (always-33). Kept so existing callers keep working.
+#[wasm_bindgen]
+pub fn score_faf_enterprise(yaml: String) -> Result<String, JsValue> {
+    score_faf(yaml)
 }
 
 /// Validate FAF YAML content — true if it parses as a YAML mapping.
@@ -135,14 +107,42 @@ mod tests {
     }
 
     #[test]
-    fn test_score_faf_is_21_base() {
-        // CLI default: 21-slot base. Enterprise is score_faf_enterprise.
+    fn test_score_faf_is_always_33() {
         let result = score_faf("project:\n  name: test".to_string()).unwrap();
         assert!(result.contains("\"score\":"));
         assert!(result.contains("\"tier\":"));
-        assert!(result.contains("\"total\":21"));
-        let ent = score_faf_enterprise("project:\n  name: test".to_string()).unwrap();
-        assert!(ent.contains("\"total\":33"));
+        assert!(result.contains("\"total\":33"));
+    }
+
+    // One engine: every score export returns the kernel's always-33 result.
+    #[test]
+    fn test_every_score_export_is_the_kernel() {
+        let files = [
+            "project:\n  name: test",
+            "faf_version: 2.5.0\nproject:\n  name: a\n  goal: b\n  main_language: Rust\n",
+            // 21 filled-or-marked base slots, no enterprise markers
+            "project:\n  name: a\n  goal: b\n  main_language: Rust\nstack:\n  frontend: None\n",
+        ];
+        for yaml in files {
+            let kernel = faf_kernel::score(yaml).unwrap().to_json();
+            assert_eq!(score_faf(yaml.to_string()).unwrap(), kernel);
+            assert_eq!(score_faf_enterprise(yaml.to_string()).unwrap(), kernel);
+            if let Ok(fafb) = compile_fafb(yaml.to_string()) {
+                assert_eq!(
+                    score_of(&score_fafb(&fafb).unwrap()),
+                    score_of(&kernel),
+                    "score_fafb != score_faf for {yaml:?}"
+                );
+            }
+        }
+    }
+
+    fn score_of(json: &str) -> u32 {
+        let rest = &json[json.find("\"score\":").expect("score field") + 8..];
+        let end = rest
+            .find(|c: char| !c.is_ascii_digit())
+            .unwrap_or(rest.len());
+        rest[..end].parse().expect("numeric score")
     }
 
     #[test]

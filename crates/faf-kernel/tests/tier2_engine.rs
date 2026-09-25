@@ -94,9 +94,13 @@ fn every_placeholder_is_rejected() {
         "unknown",
         "n/a",
         "not applicable",
+        "tbd",
+        "todo",
         "N/A",
         "Unknown",
         "NONE", // case-insensitive
+        "TBD",
+        "TODO",
     ];
     for ph in placeholders {
         let yaml = format!("project:\n  name: \"{}\"\n", ph);
