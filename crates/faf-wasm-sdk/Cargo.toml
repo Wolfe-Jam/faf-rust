@@ -1,6 +1,6 @@
 [package]
 name = "faf-wasm-sdk"
-version = "3.0.1"
+version = "3.1.0"
 description = "FAF WASM SDK — the kernel for the edge. wasm-bindgen shell over faf-kernel (scoring) + faf-fafb (binary v2). Same engine as the CLI, no drift."
 edition.workspace = true
 rust-version.workspace = true
@@ -17,7 +17,7 @@ readme = "README.md"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-faf-kernel = { version = "1.0", path = "../faf-kernel" }
+faf-kernel = { version = "1.1.1", path = "../faf-kernel" }
 faf-fafb = { version = "1.0", path = "../faf-fafb" }
 wasm-bindgen = "0.2"
 serde_yaml_ng = "0.10"

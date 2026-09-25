@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.1 — 2026-09-25
 
 - Fixed: `tbd` and `todo` (any case) are placeholders — they count as empty, as in
   fafb's always-33 Mk4. The kernel now matches the reference scorer on placeholders

@@ -205,7 +205,7 @@ dependencies = [
 
 [[package]]
 name = "faf-kernel"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "serde",
  "serde_yaml_ng",
@@ -228,7 +228,7 @@ dependencies = [
 
 [[package]]
 name = "faf-wasm-sdk"
-version = "3.0.1"
+version = "3.1.0"
 dependencies = [
  "faf-fafb",
  "faf-kernel",
