@@ -261,6 +261,8 @@ fn is_valid_populated_string(s: &str) -> bool {
         "null",
         "none",
         "unknown",
+        "tbd",
+        "todo",
         "n/a",
         "not applicable",
     ];

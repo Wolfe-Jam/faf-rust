@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fixed: `tbd` and `todo` (any case) are placeholders — they count as empty, as in
+  fafb's always-33 Mk4. The kernel now matches the reference scorer on placeholders
+  (before: `goal: TBD` scored as populated here and empty in fafb).
+
 ## 1.1.0 — 2026-08-25
 
 - Added: `FafData.commands` (top-level build/test/lint/dev map), `FafData.security`
