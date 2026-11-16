@@ -18,7 +18,7 @@ High-performance Rust SDK for FAF — parse, validate, score, .fafb binary. Zero
 
 ## Context
 
-- **Who:** Rust developers + FAF-family crates (xai-faf-rust, rust-faf-mcp) needing zero-copy .faf parse/validate/score
+- **Who:** Rust developers + FAF-family crates (fafb, rust-faf-mcp) needing zero-copy .faf parse/validate/score
 - **What:** Rust SDK for FAF — parser, validator, scorer, .fafb binary (string table, chunk classification, enterprise scale)
 - **Why:** Zero-copy parsing optimized for inference workloads — the Rust-native FAF substrate
 - **Where:** crates.io, GitHub (Wolfe-Jam/faf-rust-sdk)
